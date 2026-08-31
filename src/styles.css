@@ -1,0 +1,245 @@
+:root {
+  color: #171717;
+  background: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: #f3f4f6;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: #f3f4f6;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.resume-shell {
+  padding: 32px 16px 48px;
+}
+
+.resume-sheet {
+  width: min(210mm, 100%);
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 16mm 18mm;
+  overflow-wrap: anywhere;
+  color: #202020;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 8%);
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.resume-header[data-has-photos="true"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 28%);
+  gap: 24px;
+  align-items: start;
+}
+
+.resume-header-content,
+.resume-header-aside {
+  min-width: 0;
+}
+
+.resume-heading {
+  color: #111;
+  font-weight: 700;
+}
+
+.resume-heading-primary {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.resume-heading-section {
+  margin: 30px 0 12px;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid #222;
+  font-size: 19px;
+  line-height: 1.42;
+}
+
+.resume-paragraph {
+  margin: 5px 0;
+}
+
+.resume-spacer {
+  height: 10px;
+}
+
+.resume-list {
+  margin: 7px 0;
+  padding-left: 1.55rem;
+}
+
+.resume-list .resume-list {
+  margin: 3px 0 5px;
+  padding-left: 1.45rem;
+}
+
+.resume-list li {
+  margin: 4px 0;
+  padding-left: 0.15rem;
+}
+
+.resume-list li::marker {
+  color: #444;
+}
+
+.resume-sheet strong {
+  color: #111;
+  font-weight: 700;
+}
+
+.resume-sheet a {
+  color: #174f78;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.resume-sheet a:hover,
+.resume-sheet a:focus-visible {
+  color: #0e3857;
+}
+
+.photo-panel {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.photo-panel-item {
+  margin: 0;
+}
+
+.photo-panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #d4d4d4;
+  object-fit: cover;
+}
+
+.photo-panel figcaption {
+  margin-top: 5px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  :root,
+  html,
+  body {
+    background: #fff;
+  }
+
+  .resume-shell {
+    padding: 0;
+  }
+
+  .resume-sheet {
+    width: 100%;
+    min-height: 0;
+    padding: 24px 18px 36px;
+    border: 0;
+    box-shadow: none;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  .resume-header[data-has-photos="true"] {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .resume-header-aside,
+  .photo-panel {
+    width: min(240px, 100%);
+  }
+
+  .resume-heading-primary {
+    font-size: 28px;
+  }
+
+  .resume-heading-section {
+    margin-top: 26px;
+    font-size: 17px;
+  }
+
+  .resume-list {
+    padding-left: 1.3rem;
+  }
+
+  .resume-list .resume-list {
+    padding-left: 1.2rem;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  :root,
+  html,
+  body {
+    background: #fff;
+  }
+
+  .resume-shell {
+    padding: 0;
+  }
+
+  .resume-sheet {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    font-size: 10.5pt;
+  }
+
+  .resume-header {
+    break-inside: avoid;
+  }
+
+  .resume-heading-section {
+    break-after: avoid;
+  }
+
+  .resume-paragraph,
+  .photo-panel-item {
+    orphans: 2;
+    widows: 2;
+  }
+
+  .resume-sheet a {
+    color: inherit;
+  }
+}
