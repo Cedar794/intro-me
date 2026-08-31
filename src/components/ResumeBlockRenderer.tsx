@@ -14,17 +14,17 @@ export function ResumeBlockRenderer({ block }: ResumeBlockRendererProps) {
   switch (block.type) {
     case 'heading':
       return block.level === 1 ? (
-        <h1 className="resume-heading resume-heading-primary">
+        <h1 className="resume-heading resume-heading-primary" data-resume-line="true">
           <RichText nodes={block.content} />
         </h1>
       ) : (
-        <h2 className="resume-heading resume-heading-section">
+        <h2 className="resume-heading resume-heading-section" data-resume-line="true">
           <RichText nodes={block.content} />
         </h2>
       )
     case 'paragraph':
       return (
-        <p className="resume-paragraph">
+        <p className="resume-paragraph" data-resume-line="true">
           <RichText nodes={block.content} />
         </p>
       )

@@ -15,7 +15,9 @@ export function NestedList({ block, path = 'list' }: NestedListProps) {
         const itemPath = `${path}-${index}`
         return (
           <li key={itemPath}>
-            <RichText nodes={item.content} />
+            <span data-resume-line="true">
+              <RichText nodes={item.content} />
+            </span>
             {item.children.map((child, childIndex) => (
               <NestedList
                 key={`${itemPath}-child-${childIndex}`}
