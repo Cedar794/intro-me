@@ -13,7 +13,9 @@ for (const viewport of defaultViewports) {
 
     await expect(page.locator('main[data-resume-root="true"]')).toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: '张悦' })).toBeVisible()
-    await expect(page.getByTestId('photo-panel')).toHaveCount(0)
+    await expect(page.getByTestId('photo-panel')).toBeVisible()
+    await expect(page.getByTestId('photo-panel').getByRole('img')).toHaveCount(2)
+    await expect(page.locator('[data-evidence-image]')).toHaveCount(19)
     await expect(page.locator('a[href^="https://mp.weixin.qq.com/"]')).toHaveCount(6)
     await expect(page.getByTestId('keyword-list').getByRole('listitem')).toHaveCount(8)
     await expect(page.getByTestId('tool-stack').getByRole('listitem')).toHaveCount(13)
@@ -263,6 +265,75 @@ test('opens and dismisses campus detail by tapping outside on mobile', async ({ 
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(hasOverflow).toBe(false)
+})
+
+test('places mapped copy left of evidence on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/')
+
+  const pair = page.locator('[data-evidence-anchor="【产品统筹】"]')
+  const copyBox = await pair.locator('.resume-evidence-copy').boundingBox()
+  const galleryBox = await pair.locator('.resume-evidence-gallery').boundingBox()
+
+  expect(copyBox).not.toBeNull()
+  expect(galleryBox).not.toBeNull()
+  expect(galleryBox!.x).toBeGreaterThanOrEqual(copyBox!.x + copyBox!.width)
+})
+
+test('stacks mapped evidence after copy on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  const pair = page.locator('[data-evidence-anchor="【产品统筹】"]')
+  const copyBox = await pair.locator('.resume-evidence-copy').boundingBox()
+  const galleryBox = await pair.locator('.resume-evidence-gallery').boundingBox()
+
+  expect(copyBox).not.toBeNull()
+  expect(galleryBox).not.toBeNull()
+  expect(galleryBox!.y).toBeGreaterThanOrEqual(copyBox!.y + copyBox!.height)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+    390,
+  )
+})
+
+test('serves every local evidence asset and links to the original', async ({ page }) => {
+  await page.goto('/')
+  const images = page.locator('[data-evidence-image]')
+  await expect(images).toHaveCount(19)
+
+  const sources = await images.evaluateAll((nodes) =>
+    nodes.map((node) => (node as HTMLImageElement).src),
+  )
+  expect(new Set(sources).size).toBe(19)
+  for (const source of sources) {
+    const assetResponse = await page.request.get(source)
+    expect(assetResponse.ok()).toBe(true)
+  }
+
+  const originalLink = page.getByRole('link', {
+    name: '查看Codex Profile原图',
+  })
+  await expect(originalLink).toHaveAttribute('target', '_blank')
+  const href = await originalLink.getAttribute('href')
+  expect(href).not.toBeNull()
+  const response = await page.request.get(new URL(href!, page.url()).href)
+  expect(response.ok()).toBe(true)
+})
+
+test('hides all evidence and restores one-column A4 print flow', async ({ page }) => {
+  await page.emulateMedia({ media: 'print' })
+  await page.goto('/')
+
+  await expect(page.getByTestId('photo-panel')).toBeHidden()
+  await expect(page.locator('.resume-evidence-gallery')).toHaveCount(14)
+  for (const gallery of await page.locator('.resume-evidence-gallery').all()) {
+    await expect(gallery).toBeHidden()
+  }
+
+  const pairDisplay = await page
+    .locator('[data-evidence-anchor="【产品统筹】"]')
+    .evaluate((element) => window.getComputedStyle(element).display)
+  expect(pairDisplay).toBe('block')
 })
 
 test('removes screen framing while preserving resume content for print', async ({ page }) => {

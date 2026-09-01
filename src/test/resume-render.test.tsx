@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { ResumeBlockRenderer } from '../components/ResumeBlockRenderer'
 import { ResumeDocument } from '../components/ResumeDocument'
 import { evidenceGroups } from '../data/evidence'
@@ -279,7 +279,7 @@ test('reveals the matching campus detail on hover and hides it on leave', () => 
   const innovationDetail = screen.getByTestId('campus-detail-0')
 
   expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
-  fireEvent.mouseEnter(innovationDimension)
+  fireEvent.mouseMove(innovationDimension)
   expect(innovationDimension).toHaveAttribute('aria-expanded', 'true')
   expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
   expect(innovationDetail).toHaveTextContent('打造"AI+"一站式智慧文旅平台')
@@ -292,7 +292,7 @@ test('reveals mapped campus evidence inside the active radar detail', () => {
   render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
 
   const radar = screen.getByTestId('campus-radar')
-  fireEvent.mouseEnter(
+  fireEvent.mouseMove(
     within(radar).getByRole('button', { name: '创新创业赛事能力' }),
   )
   const innovationDetail = screen.getByTestId('campus-detail-0')
@@ -331,29 +331,21 @@ test('maps organization title and AIPO child evidence without a close button', (
 })
 
 test('treats the revealed detail as part of the hover region', () => {
-  vi.useFakeTimers()
+  render(<ResumeDocument document={resume} />)
 
-  try {
-    render(<ResumeDocument document={resume} />)
+  const radar = screen.getByTestId('campus-radar')
+  const innovationDimension = within(radar).getByRole('button', {
+    name: '创新创业赛事能力',
+  })
+  const innovationDetail = screen.getByTestId('campus-detail-0')
 
-    const radar = screen.getByTestId('campus-radar')
-    const innovationDimension = within(radar).getByRole('button', {
-      name: '创新创业赛事能力',
-    })
-    const innovationDetail = screen.getByTestId('campus-detail-0')
+  fireEvent.mouseMove(innovationDimension)
+  fireEvent.mouseLeave(innovationDimension, { relatedTarget: innovationDetail })
+  fireEvent.mouseEnter(innovationDetail, { relatedTarget: innovationDimension })
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
 
-    fireEvent.mouseEnter(innovationDimension)
-    fireEvent.mouseLeave(innovationDimension, { relatedTarget: innovationDetail })
-    fireEvent.mouseEnter(innovationDetail, { relatedTarget: innovationDimension })
-    act(() => vi.advanceTimersByTime(180))
-    expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
-
-    fireEvent.mouseLeave(innovationDetail, { relatedTarget: radar })
-    act(() => vi.advanceTimersByTime(180))
-    expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
-  } finally {
-    vi.useRealTimers()
-  }
+  fireEvent.mouseLeave(radar, { relatedTarget: document.body })
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
 })
 
 test('does not render a persistent close control for campus details', () => {

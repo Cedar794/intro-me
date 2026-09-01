@@ -1029,7 +1029,7 @@ Add a new evidence breakpoint before the existing `720px` block:
 }
 ```
 
-Remove the duplicate header stacking and `240px` panel width from the existing `720px` block. Keep its edge-to-edge paper, typography, list indentation, and compact radar rules.
+Remove the duplicate header stacking, `240px` panel width, `410px` radar height, and `330px` detail-height overrides from the existing `720px` block. Keep its edge-to-edge paper, typography, list indentation, and compact radar sizing.
 
 - [ ] **Step 4: Implement image-free print restoration**
 

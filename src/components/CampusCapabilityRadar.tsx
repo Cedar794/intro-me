@@ -19,16 +19,12 @@ function CampusDetail({
   evidenceResolver,
   index,
   item,
-  onHoverEnd,
-  onHoverStart,
   panelId,
 }: {
   active: boolean
   evidenceResolver?: EvidenceResolver
   index: number
   item: ListItem
-  onHoverEnd: () => void
-  onHoverStart: () => void
   panelId: string
 }) {
   const titleEvidence = evidenceResolver?.(inlineText(item.content))
@@ -46,8 +42,6 @@ function CampusDetail({
       data-campus-detail="true"
       data-testid={`campus-detail-${index}`}
       id={panelId}
-      onMouseEnter={onHoverStart}
-      onMouseLeave={onHoverEnd}
     >
       {titleEvidence ? (
         <ResumeEvidencePair group={titleEvidence}>{title}</ResumeEvidencePair>
@@ -70,7 +64,6 @@ export function CampusCapabilityRadar({
   list,
 }: CampusCapabilityRadarProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const hoverDismissTimer = useRef<number | null>(null)
   const radarRef = useRef<HTMLDivElement>(null)
   const panelPrefix = useId()
   const headingText = inlineText(heading)
@@ -83,32 +76,13 @@ export function CampusCapabilityRadar({
     : headingText.slice(abilityStart)
   const dimensions = list.items.slice(0, DIMENSION_POSITIONS.length)
 
-  function cancelScheduledDismiss() {
-    if (hoverDismissTimer.current !== null) {
-      window.clearTimeout(hoverDismissTimer.current)
-      hoverDismissTimer.current = null
-    }
-  }
-
   function showDetails(index: number) {
-    cancelScheduledDismiss()
     setActiveIndex(index)
   }
 
   function dismissDetails() {
-    cancelScheduledDismiss()
     setActiveIndex(null)
   }
-
-  function scheduleDismiss() {
-    cancelScheduledDismiss()
-    hoverDismissTimer.current = window.setTimeout(() => {
-      hoverDismissTimer.current = null
-      setActiveIndex(null)
-    }, 120)
-  }
-
-  useEffect(() => () => cancelScheduledDismiss(), [])
 
   useEffect(() => {
     if (activeIndex === null) {
@@ -199,8 +173,7 @@ export function CampusCapabilityRadar({
                   key={inlineText(item.content)}
                   onClick={() => showDetails(index)}
                   onFocus={() => showDetails(index)}
-                  onMouseEnter={() => showDetails(index)}
-                  onMouseLeave={scheduleDismiss}
+                  onMouseMove={() => showDetails(index)}
                   type="button"
                 >
                   <span className="campus-radar-dimension-label">
@@ -219,8 +192,6 @@ export function CampusCapabilityRadar({
               index={index}
               item={item}
               key={`campus-detail-${inlineText(item.content)}`}
-              onHoverEnd={scheduleDismiss}
-              onHoverStart={() => showDetails(index)}
               panelId={`${panelPrefix}-campus-detail-${index}`}
             />
           ))}
