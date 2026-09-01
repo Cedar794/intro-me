@@ -345,6 +345,36 @@ test('treats the revealed detail as part of the hover region', () => {
   expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
 })
 
+test('keeps the campus detail open while the evidence viewer owns interaction', () => {
+  const viewer = document.createElement('div')
+  const viewerTarget = document.createElement('button')
+  viewer.dataset.evidenceViewer = 'true'
+  viewerTarget.type = 'button'
+  viewer.append(viewerTarget)
+  document.body.append(viewer)
+
+  render(<ResumeDocument document={resume} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  const innovationDetail = screen.getByTestId('campus-detail-0')
+
+  fireEvent.click(
+    within(radar).getByRole('button', { name: '创新创业赛事能力' }),
+  )
+  fireEvent.blur(radar, { relatedTarget: viewerTarget })
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
+
+  fireEvent.mouseLeave(radar, { relatedTarget: viewerTarget })
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
+
+  fireEvent.pointerDown(viewerTarget)
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
+
+  viewer.remove()
+  fireEvent.pointerDown(document.body)
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+})
+
 test('does not render a persistent close control for campus details', () => {
   render(<ResumeDocument document={resume} />)
 

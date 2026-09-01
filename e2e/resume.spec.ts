@@ -147,6 +147,35 @@ test('opens only the selected evidence group from a mobile anchor', async ({ pag
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
 })
 
+test('restores focus to a secondary campus anchor after its viewer closes', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  const detail = page.getByTestId('campus-detail-0')
+  await page.getByRole('button', { name: '创新创业赛事能力' }).click()
+  await expect(detail).toBeVisible()
+
+  const secondaryAnchor = page.locator(
+    '[data-evidence-anchor-secondary="true"]'
+      + '[data-evidence-anchor-id="campus-yourgen"]',
+  )
+  await secondaryAnchor.click()
+
+  const viewer = page.getByRole('dialog', { name: '证据 3：语境项目' })
+  await expect(viewer).toBeVisible()
+  await page.waitForTimeout(220)
+  await expect(detail).toBeVisible()
+
+  await page.keyboard.press('Escape')
+  await expect(viewer).toHaveCount(0)
+  await expect(secondaryAnchor).toBeFocused()
+
+  await page
+    .getByRole('heading', { level: 2, name: '实习与工作经历' })
+    .dispatchEvent('pointerdown', { pointerType: 'touch' })
+  await expect(detail).toBeHidden()
+})
+
 test('gives profile tags the full content width on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')

@@ -21,6 +21,16 @@ type CampusCapabilityRadarProps = {
 
 const DIMENSION_POSITIONS = ['top', 'right', 'bottom', 'left'] as const
 
+function hasActiveEvidenceViewer() {
+  return typeof document !== 'undefined'
+    && document.querySelector('[data-evidence-viewer]') !== null
+}
+
+function isEvidenceViewerTarget(target: EventTarget | null) {
+  return target instanceof Element
+    && target.closest('[data-evidence-viewer]') !== null
+}
+
 function CampusDetail({
   active,
   evidencePresentation,
@@ -112,6 +122,9 @@ export function CampusCapabilityRadar({
 
     function dismissOnOutsidePointer(event: PointerEvent) {
       const target = event.target
+      if (hasActiveEvidenceViewer() || isEvidenceViewerTarget(target)) {
+        return
+      }
       if (target instanceof Node && !radarRef.current?.contains(target)) {
         dismissDetails()
       }
@@ -138,6 +151,9 @@ export function CampusCapabilityRadar({
         data-testid="campus-radar"
         onBlur={(event) => {
           const nextFocus = event.relatedTarget
+          if (hasActiveEvidenceViewer() || isEvidenceViewerTarget(nextFocus)) {
+            return
+          }
           if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) {
             dismissDetails()
           }
@@ -149,6 +165,9 @@ export function CampusCapabilityRadar({
         }}
         onMouseLeave={(event) => {
           const nextTarget = event.relatedTarget
+          if (hasActiveEvidenceViewer() || isEvidenceViewerTarget(nextTarget)) {
+            return
+          }
           if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
             return
           }
