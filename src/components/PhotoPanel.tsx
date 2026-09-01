@@ -1,7 +1,7 @@
-import type { PhotoItem } from '../data/resumeTypes'
+import type { EvidenceAsset } from '../data/evidence'
 
 type PhotoPanelProps = {
-  photos: PhotoItem[]
+  photos: EvidenceAsset[]
 }
 
 export function PhotoPanel({ photos }: PhotoPanelProps) {
@@ -11,8 +11,24 @@ export function PhotoPanel({ photos }: PhotoPanelProps) {
     <div className="photo-panel" data-testid="photo-panel">
       {photos.map((photo) => (
         <figure className="photo-panel-item" key={photo.id}>
-          <img src={photo.src} alt={photo.alt} />
-          {photo.caption ? <figcaption>{photo.caption}</figcaption> : null}
+          <a
+            aria-label={`查看${photo.caption}原图`}
+            className="resume-evidence-link"
+            href={photo.src}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <img
+              alt={photo.alt}
+              data-evidence-image={photo.id}
+              decoding="async"
+              height={photo.height}
+              loading="eager"
+              src={photo.src}
+              width={photo.width}
+            />
+          </a>
+          <figcaption>{photo.caption}</figcaption>
         </figure>
       ))}
     </div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { EvidenceGroup } from '../data/evidence'
 import { inlineText } from '../data/inlineText'
 import type { ResumeBlock } from '../data/resumeTypes'
 import type { ResumeDocumentData } from '../data/resumeTypes'
@@ -10,12 +11,14 @@ import { ResumeSection } from './ResumeSection'
 
 type ResumeDocumentProps = {
   document: ResumeDocumentData
+  evidenceGroups?: EvidenceGroup[]
   headerAside?: ReactNode
   hasHeaderAside?: boolean
 }
 
 export function ResumeDocument({
   document,
+  evidenceGroups = [],
   headerAside,
   hasHeaderAside = false,
 }: ResumeDocumentProps) {
@@ -80,6 +83,7 @@ export function ResumeDocument({
     <article
       className="resume-sheet"
       data-testid="resume-sheet"
+      data-has-evidence={String(hasHeaderAside || evidenceGroups.length > 0)}
       data-has-photos={String(hasHeaderAside)}
     >
       <ResumeHeader blocks={headerBlocks} aside={headerAside} hasAside={hasHeaderAside} />

@@ -1,4 +1,5 @@
 import { ResumePhotoLayout } from './components/ResumePhotoLayout'
+import { evidenceGroups } from './data/evidence'
 import { getPreviewPhotos, photos } from './data/photos'
 import { resume } from './data/resume'
 
@@ -9,7 +10,11 @@ export function App() {
   return (
     <main data-resume-root="true">
       <div className="resume-shell">
-        <ResumePhotoLayout document={resume} photos={visiblePhotos} />
+        <ResumePhotoLayout
+          document={resume}
+          evidenceGroups={evidenceGroups}
+          photos={visiblePhotos}
+        />
       </div>
     </main>
   )

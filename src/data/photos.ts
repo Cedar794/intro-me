@@ -1,10 +1,14 @@
-import type { PhotoItem } from './resumeTypes'
+import type { EvidenceAsset } from './evidence'
+import { headerProfileGroup } from './evidence'
 
-export const photos: PhotoItem[] = []
+export const photos: EvidenceAsset[] = headerProfileGroup.assets
 
-const previewPhoto: PhotoItem = {
+const previewPhoto: EvidenceAsset = {
   id: 'layout-preview',
   alt: '照片布局预览',
+  caption: '照片布局预览',
+  width: 360,
+  height: 480,
   src: `data:image/svg+xml,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 480">
       <rect width="360" height="480" fill="#f1f1f1"/>
@@ -14,7 +18,7 @@ const previewPhoto: PhotoItem = {
   `)}`,
 }
 
-export function getPreviewPhotos(): PhotoItem[] {
+export function getPreviewPhotos(): EvidenceAsset[] {
   if (!import.meta.env.DEV || typeof window === 'undefined') return []
   const previewEnabled = new URLSearchParams(window.location.search).get('photoPreview') === '1'
   return previewEnabled ? [previewPhoto] : []

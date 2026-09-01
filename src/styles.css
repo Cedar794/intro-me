@@ -50,6 +50,10 @@ select {
   line-height: 1.72;
 }
 
+.resume-sheet[data-has-evidence="true"] {
+  width: min(1180px, 100%);
+}
+
 .resume-header[data-has-photos="true"] {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(150px, 28%);
@@ -826,24 +830,48 @@ select {
   width: 100%;
 }
 
-.photo-panel-item {
+.resume-evidence-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.resume-evidence-item {
+  min-width: 0;
   margin: 0;
 }
 
+.resume-evidence-link {
+  display: block;
+  border-radius: 4px;
+  outline-offset: 3px;
+}
+
+.resume-evidence-link img,
 .photo-panel img {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid #d4d4d4;
-  object-fit: cover;
+  max-height: 340px;
+  object-fit: contain;
+  background: #fafafa;
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
 }
 
+.resume-evidence-item figcaption,
 .photo-panel figcaption {
-  margin-top: 5px;
-  color: #666;
-  font-size: 12px;
-  line-height: 1.5;
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.45;
 }
+
+.photo-panel-item {
+  margin: 0;
+}
+
 
 @media (max-width: 720px) {
   :root,

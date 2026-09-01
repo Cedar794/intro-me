@@ -24,11 +24,3 @@ export type ResumeDocumentData = {
   documentTitle: string
   blocks: ResumeBlock[]
 }
-
-export type PhotoItem = {
-  id: string
-  src: string
-  alt: string
-  caption?: string
-  priority?: number
-}
