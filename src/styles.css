@@ -1008,6 +1008,81 @@ select {
   line-height: 1.45;
 }
 
+.evidence-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 20px 48px;
+  background: #fff;
+}
+
+.evidence-viewer-content {
+  width: min(100%, 880px);
+  margin: 0 auto;
+}
+
+.evidence-viewer-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border-bottom: 1px solid #d6d9de;
+}
+
+.evidence-viewer-return {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0;
+  color: #174f78;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.evidence-viewer-return:hover,
+.evidence-viewer-return:focus-visible {
+  color: #0e3857;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.evidence-viewer-title {
+  margin: 0;
+  color: #202124;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.resume-evidence-gallery--viewer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 30px;
+  padding-top: 28px;
+}
+
+.resume-evidence-gallery--viewer .resume-evidence-link img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  margin: 0 auto;
+}
+
+.resume-evidence-gallery--viewer .resume-evidence-item figcaption {
+  margin-top: 8px;
+  font-size: 12px;
+  text-align: center;
+}
+
 @media (max-width: 840px) {
   .campus-radar {
     min-height: 520px;
@@ -1170,7 +1245,8 @@ select {
 
   .evidence-callout,
   .evidence-leader-lines,
-  .evidence-anchor {
+  .evidence-anchor,
+  .evidence-viewer {
     display: none !important;
   }
 

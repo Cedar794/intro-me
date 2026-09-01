@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 
 const defaultViewports = [
-  { name: 'desktop', width: 1440, height: 900 },
-  { name: 'tablet', width: 768, height: 1024 },
-  { name: 'mobile', width: 390, height: 844 },
+  { name: 'desktop', width: 1440, height: 900, wide: true },
+  { name: 'tablet', width: 768, height: 1024, wide: false },
+  { name: 'mobile', width: 390, height: 844, wide: false },
 ]
 
 for (const viewport of defaultViewports) {
@@ -15,8 +15,12 @@ for (const viewport of defaultViewports) {
     await expect(page.getByRole('heading', { level: 1, name: '张悦' })).toBeVisible()
     await expect(page.getByTestId('resume-evidence-canvas')).toBeVisible()
     await expect(page.getByTestId('resume-sheet').locator('[data-evidence-image]')).toHaveCount(0)
-    await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(15)
-    await expect(page.locator('[data-evidence-image]')).toHaveCount(19)
+    await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(
+      viewport.wide ? 15 : 0,
+    )
+    await expect(page.locator('[data-evidence-image]')).toHaveCount(
+      viewport.wide ? 19 : 0,
+    )
     await expect(page.locator('a[href^="https://mp.weixin.qq.com/"]')).toHaveCount(6)
     await expect(page.getByTestId('keyword-list').getByRole('listitem')).toHaveCount(8)
     await expect(page.getByTestId('tool-stack').getByRole('listitem')).toHaveCount(13)
@@ -111,6 +115,36 @@ test('fits both exterior rails inside the canvas at 1320px', async ({ page }) =>
     expect(box!.x).toBeGreaterThanOrEqual(canvasBox!.x)
     expect(box!.x + box!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width)
   }
+})
+
+test('opens only the selected evidence group from a mobile anchor', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(0)
+  await expect(page.locator('[data-evidence-image]')).toHaveCount(0)
+
+  const anchor = page.getByRole('button', {
+    name: '查看证据 3：语境项目',
+  }).first()
+  await anchor.click()
+
+  const viewer = page.getByRole('dialog', {
+    name: '证据 3：语境项目',
+  })
+  await expect(viewer).toBeVisible()
+  await expect(viewer.locator('[data-evidence-image]')).toHaveCount(3)
+
+  const boxes = await viewer.locator('[data-evidence-image]').evaluateAll(
+    (images) => images.map((image) => image.getBoundingClientRect()),
+  )
+  expect(boxes[1].top).toBeGreaterThanOrEqual(boxes[0].bottom)
+  expect(boxes[2].top).toBeGreaterThanOrEqual(boxes[1].bottom)
+
+  await page.keyboard.press('Escape')
+  await expect(viewer).toHaveCount(0)
+  await expect(anchor).toBeFocused()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
 })
 
 test('gives profile tags the full content width on mobile', async ({ page }) => {
@@ -320,6 +354,7 @@ test('opens and dismisses campus detail by tapping outside on mobile', async ({ 
 })
 
 test('serves every local evidence asset and links to the original', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
   const images = page.locator('[data-evidence-image]')
   await expect(images).toHaveCount(19)
@@ -344,19 +379,20 @@ test('serves every local evidence asset and links to the original', async ({ pag
 })
 
 test('hides all evidence and restores one-column A4 print flow', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.emulateMedia({ media: 'print' })
   await page.goto('/')
 
-  await expect(page.getByTestId('photo-panel')).toBeHidden()
-  await expect(page.locator('.resume-evidence-gallery')).toHaveCount(14)
+  await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(15)
+  await expect(page.locator('.resume-evidence-gallery')).toHaveCount(15)
   for (const gallery of await page.locator('.resume-evidence-gallery').all()) {
     await expect(gallery).toBeHidden()
   }
-
-  const pairDisplay = await page
-    .locator('[data-evidence-anchor="【产品统筹】"]')
-    .evaluate((element) => window.getComputedStyle(element).display)
-  expect(pairDisplay).toBe('block')
+  for (const anchor of await page.locator('[data-evidence-anchor-id]').all()) {
+    await expect(anchor).toBeHidden()
+  }
+  await expect(page.locator('[data-evidence-viewer]')).toHaveCount(0)
+  await expect(page.getByTestId('resume-sheet')).toBeVisible()
 })
 
 test('removes screen framing while preserving resume content for print', async ({ page }) => {
