@@ -149,39 +149,26 @@ export function CampusCapabilityRadar({
       >
         <div className="campus-radar-map">
           <div className="campus-radar-visual" aria-hidden="true">
-            <svg className="campus-radar-svg" viewBox="0 0 600 360">
-              <defs>
-                <linearGradient id={`${panelPrefix}-field`} x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#4285f4" />
-                  <stop offset="0.34" stopColor="#ea4335" />
-                  <stop offset="0.68" stopColor="#fbbc04" />
-                  <stop offset="1" stopColor="#34a853" />
-                </linearGradient>
-              </defs>
-              <g className="campus-radar-grid">
-                <polygon points="300,44 464,180 300,316 136,180" />
-                <polygon points="300,88 412,180 300,272 188,180" />
-                <polygon points="300,132 356,180 300,228 244,180" />
-                <path d="M300 44v272M136 180h328" />
-              </g>
-              <polygon
-                className="campus-radar-field"
-                fill={`url(#${panelPrefix}-field)`}
-                points="300,56 450,180 300,304 150,180"
-              />
-              <g className="campus-radar-points">
-                <circle className="campus-radar-point campus-radar-point--blue" cx="300" cy="44" r="6" />
-                <circle className="campus-radar-point campus-radar-point--red" cx="464" cy="180" r="6" />
-                <circle className="campus-radar-point campus-radar-point--yellow" cx="300" cy="316" r="6" />
-                <circle className="campus-radar-point campus-radar-point--green" cx="136" cy="180" r="6" />
-              </g>
-              <text className="campus-radar-center" textAnchor="middle" x="300" y="174">
-                全领域
-              </text>
-              <text className="campus-radar-center" textAnchor="middle" x="300" y="196">
-                创造能力
-              </text>
-            </svg>
+            <div className="campus-star-map" data-testid="campus-star-map">
+              <span className="campus-star-map-aurora" />
+              <span className="campus-star-map-orbit campus-star-map-orbit--outer" />
+              <span className="campus-star-map-orbit campus-star-map-orbit--inner" />
+              {DIMENSION_POSITIONS.map((position, index) => (
+                <span
+                  className={`campus-star-map-axis campus-star-map-axis--${position}`}
+                  data-axis={index}
+                  data-campus-star-axis="true"
+                  key={position}
+                >
+                  <span className="campus-star-map-axis-line" />
+                  <span className="campus-star-map-node" />
+                </span>
+              ))}
+              <span className="campus-star-map-core">
+                <span>全领域</span>
+                <strong>创造能力</strong>
+              </span>
+            </div>
           </div>
           <div aria-label="校园能力维度" className="campus-radar-dimensions" role="group">
             {dimensions.map((item, index) => {

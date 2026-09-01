@@ -183,7 +183,7 @@ test('places the exact major tag beside the school summary', () => {
   expect(educationSummary.querySelectorAll('[data-resume-line="true"]')).toHaveLength(2)
 })
 
-test('renders the campus source list as a four-dimensional capability radar', () => {
+test('renders the campus source list as a four-route capability star map', () => {
   render(<ResumeDocument document={resume} />)
 
   const heading = screen.getByRole('heading', {
@@ -204,6 +204,15 @@ test('renders the campus source list as a four-dimensional capability radar', ()
   ])
   expect(radar).toHaveAttribute('data-active-dimension', '')
   expect(radar.querySelectorAll('[data-campus-detail]')).toHaveLength(4)
+
+  const starMap = within(radar).getByTestId('campus-star-map')
+  expect(radar.querySelector('svg')).not.toBeInTheDocument()
+  expect(starMap).toHaveTextContent('全领域创造能力')
+  expect(
+    Array.from(starMap.querySelectorAll('[data-campus-star-axis]')).map(
+      (axis) => axis.getAttribute('data-axis'),
+    ),
+  ).toEqual(['0', '1', '2', '3'])
 })
 
 test('reveals the matching campus detail on hover and hides it on leave', () => {

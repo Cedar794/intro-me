@@ -123,6 +123,58 @@ test('uses roomy dimension hover targets around a compact radar', async ({ page 
   expect(labelTypography.lineHeight).toBeGreaterThanOrEqual(18)
 })
 
+test('renders a CSS ability star map without a traditional SVG radar', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  const radar = page.getByTestId('campus-radar')
+  const starMap = page.getByTestId('campus-star-map')
+  const axes = starMap.locator('[data-campus-star-axis]')
+
+  await expect(radar.locator('svg')).toHaveCount(0)
+  await expect(starMap).toBeVisible()
+  await expect(starMap).toHaveText('全领域创造能力')
+  await expect(axes).toHaveCount(4)
+
+  const rendering = await starMap.evaluate((map) => {
+    const aurora = map.querySelector<HTMLElement>('.campus-star-map-aurora')
+    const axisLines = Array.from(
+      map.querySelectorAll<HTMLElement>('.campus-star-map-axis-line'),
+    )
+
+    return {
+      auroraBackground: aurora ? window.getComputedStyle(aurora).backgroundImage : '',
+      auroraClipPath: aurora ? window.getComputedStyle(aurora).clipPath : '',
+      axisBackgrounds: axisLines.map(
+        (axisLine) => window.getComputedStyle(axisLine).backgroundImage,
+      ),
+    }
+  })
+
+  expect(rendering.auroraBackground).toMatch(/(?:conic|radial)-gradient/u)
+  expect(rendering.auroraClipPath).toContain('polygon')
+  expect(rendering.axisBackgrounds).toHaveLength(4)
+  expect(
+    rendering.axisBackgrounds.every((background) => background.includes('linear-gradient')),
+  ).toBe(true)
+
+  await page.getByRole('button', { name: '创新创业赛事能力' }).hover()
+  await expect(radar).toHaveAttribute('data-active-dimension', '0')
+  await expect(page.getByTestId('campus-detail-0')).toBeVisible()
+  await expect.poll(async () => starMap.evaluate((map) => {
+    const activeRoute = map.querySelector<HTMLElement>('[data-axis="0"]')
+    const inactiveRoute = map.querySelector<HTMLElement>('[data-axis="1"]')
+    const activeOpacity = activeRoute
+      ? Number(window.getComputedStyle(activeRoute).opacity)
+      : 0
+    const inactiveOpacity = inactiveRoute
+      ? Number(window.getComputedStyle(inactiveRoute).opacity)
+      : 0
+
+    return activeOpacity - inactiveOpacity
+  })).toBeGreaterThan(0)
+})
+
 test('renders campus detail as a marker-free white light field', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
