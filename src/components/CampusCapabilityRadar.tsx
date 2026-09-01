@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { InlineNode, ListBlock, ListItem } from '../data/resumeTypes'
 import { inlineText } from '../data/inlineText'
 import { NestedList } from './NestedList'
@@ -15,14 +15,16 @@ function CampusDetail({
   active,
   index,
   item,
+  onHoverEnd,
+  onHoverStart,
   panelId,
-  onClose,
 }: {
   active: boolean
   index: number
   item: ListItem
+  onHoverEnd: () => void
+  onHoverStart: () => void
   panelId: string
-  onClose: () => void
 }) {
   return (
     <section
@@ -32,17 +34,9 @@ function CampusDetail({
       data-campus-detail="true"
       data-testid={`campus-detail-${index}`}
       id={panelId}
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
     >
-      <button
-        aria-label="关闭校园经历详情"
-        className="campus-radar-close"
-        onClick={onClose}
-        type="button"
-      >
-        <svg aria-hidden="true" viewBox="0 0 20 20">
-          <path d="m5 5 10 10M15 5 5 15" />
-        </svg>
-      </button>
       <h3 className="campus-radar-detail-title" data-resume-line="true">
         <RichText nodes={item.content} />
       </h3>
@@ -62,6 +56,8 @@ export function CampusCapabilityRadar({
   list,
 }: CampusCapabilityRadarProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const hoverDismissTimer = useRef<number | null>(null)
+  const radarRef = useRef<HTMLDivElement>(null)
   const panelPrefix = useId()
   const headingText = inlineText(heading)
   const abilityStart = headingText.indexOf('【')
@@ -73,9 +69,48 @@ export function CampusCapabilityRadar({
     : headingText.slice(abilityStart)
   const dimensions = list.items.slice(0, DIMENSION_POSITIONS.length)
 
+  function cancelScheduledDismiss() {
+    if (hoverDismissTimer.current !== null) {
+      window.clearTimeout(hoverDismissTimer.current)
+      hoverDismissTimer.current = null
+    }
+  }
+
+  function showDetails(index: number) {
+    cancelScheduledDismiss()
+    setActiveIndex(index)
+  }
+
   function dismissDetails() {
+    cancelScheduledDismiss()
     setActiveIndex(null)
   }
+
+  function scheduleDismiss() {
+    cancelScheduledDismiss()
+    hoverDismissTimer.current = window.setTimeout(() => {
+      hoverDismissTimer.current = null
+      setActiveIndex(null)
+    }, 120)
+  }
+
+  useEffect(() => () => cancelScheduledDismiss(), [])
+
+  useEffect(() => {
+    if (activeIndex === null) {
+      return undefined
+    }
+
+    function dismissOnOutsidePointer(event: PointerEvent) {
+      const target = event.target
+      if (target instanceof Node && !radarRef.current?.contains(target)) {
+        dismissDetails()
+      }
+    }
+
+    document.addEventListener('pointerdown', dismissOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', dismissOnOutsidePointer)
+  }, [activeIndex])
 
   return (
     <section className="campus-capability-section">
@@ -92,12 +127,25 @@ export function CampusCapabilityRadar({
         className="campus-radar"
         data-active-dimension={activeIndex ?? ''}
         data-testid="campus-radar"
+        onBlur={(event) => {
+          const nextFocus = event.relatedTarget
+          if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) {
+            dismissDetails()
+          }
+        }}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
             dismissDetails()
           }
         }}
-        onMouseLeave={dismissDetails}
+        onMouseLeave={(event) => {
+          const nextTarget = event.relatedTarget
+          if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
+            return
+          }
+          dismissDetails()
+        }}
+        ref={radarRef}
       >
         <div className="campus-radar-map">
           <div className="campus-radar-visual" aria-hidden="true">
@@ -148,13 +196,15 @@ export function CampusCapabilityRadar({
                   data-active={String(active)}
                   data-campus-dimension="true"
                   key={inlineText(item.content)}
-                  onClick={() => setActiveIndex(index)}
-                  onFocus={() => setActiveIndex(index)}
-                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => showDetails(index)}
+                  onFocus={() => showDetails(index)}
+                  onMouseEnter={() => showDetails(index)}
+                  onMouseLeave={scheduleDismiss}
                   type="button"
                 >
-                  <span className="campus-radar-dimension-marker" aria-hidden="true" />
-                  <RichText nodes={item.content} />
+                  <span className="campus-radar-dimension-label">
+                    <RichText nodes={item.content} />
+                  </span>
                 </button>
               )
             })}
@@ -167,7 +217,8 @@ export function CampusCapabilityRadar({
               index={index}
               item={item}
               key={`campus-detail-${inlineText(item.content)}`}
-              onClose={dismissDetails}
+              onHoverEnd={scheduleDismiss}
+              onHoverStart={() => showDetails(index)}
               panelId={`${panelPrefix}-campus-detail-${index}`}
             />
           ))}

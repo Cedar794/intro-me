@@ -90,11 +90,73 @@ test('reveals the matching campus detail on desktop hover', async ({ page }) => 
   await expect(innovationDetail).toBeVisible()
   await expect(innovationDetail).toContainText('打造"AI+"一站式智慧文旅平台')
 
+  await innovationDetail.hover()
+  await expect(innovationDetail).toBeVisible()
+
   await page.getByRole('heading', { level: 2, name: '实习与工作经历' }).hover()
   await expect(innovationDetail).toBeHidden()
 })
 
-test('opens and closes campus detail by tap on mobile', async ({ page }) => {
+test('uses roomy dimension hover targets around a compact radar', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  const radarBox = await page.getByTestId('campus-radar').boundingBox()
+  const visualBox = await page.locator('.campus-radar-visual').boundingBox()
+  const dimension = page.getByRole('button', { name: '创新创业赛事能力' })
+  const dimensionBox = await dimension.boundingBox()
+  const labelTypography = await dimension.locator('.campus-radar-dimension-label').evaluate((label) => {
+    const styles = window.getComputedStyle(label)
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      lineHeight: Number.parseFloat(styles.lineHeight),
+    }
+  })
+
+  expect(radarBox).not.toBeNull()
+  expect(visualBox).not.toBeNull()
+  expect(dimensionBox).not.toBeNull()
+  expect(visualBox!.width / radarBox!.width).toBeLessThanOrEqual(0.64)
+  expect(dimensionBox!.width).toBeGreaterThanOrEqual(240)
+  expect(dimensionBox!.height).toBeGreaterThanOrEqual(90)
+  expect(labelTypography.fontSize).toBeGreaterThanOrEqual(14)
+  expect(labelTypography.lineHeight).toBeGreaterThanOrEqual(18)
+})
+
+test('renders campus detail as a marker-free white light field', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  await page.getByRole('button', { name: '创新创业赛事能力' }).hover()
+  const detail = page.getByTestId('campus-detail-0')
+  await expect(detail).toBeVisible()
+  await expect(page.getByRole('button', { name: '关闭校园经历详情' })).toHaveCount(0)
+
+  const surface = await detail.evaluate((element) => {
+    const styles = window.getComputedStyle(element)
+    const halo = window.getComputedStyle(element, '::before')
+    const listStyles = Array.from(element.querySelectorAll('ul, ol')).map(
+      (list) => window.getComputedStyle(list).listStyleType,
+    )
+
+    return {
+      backgroundColor: styles.backgroundColor,
+      borderStyle: styles.borderStyle,
+      boxShadow: styles.boxShadow,
+      haloBackground: halo.backgroundImage,
+      listStyles,
+    }
+  })
+
+  expect(surface.backgroundColor).toBe('rgba(0, 0, 0, 0)')
+  expect(surface.borderStyle).toBe('none')
+  expect(surface.boxShadow).toBe('none')
+  expect(surface.haloBackground).toContain('radial-gradient')
+  expect(surface.listStyles.length).toBeGreaterThan(0)
+  expect(surface.listStyles.every((style) => style === 'none')).toBe(true)
+})
+
+test('opens and dismisses campus detail by tapping outside on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
 
@@ -103,7 +165,10 @@ test('opens and closes campus detail by tap on mobile', async ({ page }) => {
 
   await expect(organizationDetail).toBeVisible()
   await expect(organizationDetail).toContainText('上海七校')
-  await page.getByRole('button', { name: '关闭校园经历详情' }).click()
+  await expect(page.getByRole('button', { name: '关闭校园经历详情' })).toHaveCount(0)
+  await page
+    .getByRole('heading', { level: 2, name: '实习与工作经历' })
+    .dispatchEvent('pointerdown', { pointerType: 'touch' })
   await expect(organizationDetail).toBeHidden()
 
   const hasOverflow = await page.evaluate(

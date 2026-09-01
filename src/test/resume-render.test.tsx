@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { ResumeBlockRenderer } from '../components/ResumeBlockRenderer'
 import { ResumeDocument } from '../components/ResumeDocument'
 import links from '../data/resume-links.json'
@@ -223,6 +223,64 @@ test('reveals the matching campus detail on hover and hides it on leave', () => 
 
   fireEvent.mouseLeave(radar)
   expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+})
+
+test('treats the revealed detail as part of the hover region', () => {
+  vi.useFakeTimers()
+
+  try {
+    render(<ResumeDocument document={resume} />)
+
+    const radar = screen.getByTestId('campus-radar')
+    const innovationDimension = within(radar).getByRole('button', {
+      name: '创新创业赛事能力',
+    })
+    const innovationDetail = screen.getByTestId('campus-detail-0')
+
+    fireEvent.mouseEnter(innovationDimension)
+    fireEvent.mouseLeave(innovationDimension, { relatedTarget: innovationDetail })
+    fireEvent.mouseEnter(innovationDetail, { relatedTarget: innovationDimension })
+    act(() => vi.advanceTimersByTime(180))
+    expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
+
+    fireEvent.mouseLeave(innovationDetail, { relatedTarget: radar })
+    act(() => vi.advanceTimersByTime(180))
+    expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('does not render a persistent close control for campus details', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  fireEvent.click(
+    within(radar).getByRole('button', { name: '创新创业赛事能力' }),
+  )
+
+  expect(
+    screen.queryAllByRole('button', {
+      name: '关闭校园经历详情',
+      hidden: true,
+    }),
+  ).toHaveLength(0)
+})
+
+test('dismisses a tapped campus detail when the user taps outside the radar', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  const organizationDimension = within(radar).getByRole('button', {
+    name: '校企活动组织力',
+  })
+  const organizationDetail = screen.getByTestId('campus-detail-1')
+
+  fireEvent.click(organizationDimension)
+  expect(organizationDetail).toHaveAttribute('aria-hidden', 'false')
+
+  fireEvent.pointerDown(document.body)
+  expect(organizationDetail).toHaveAttribute('aria-hidden', 'true')
 })
 
 test('supports tap selection and Escape dismissal for campus details', () => {
