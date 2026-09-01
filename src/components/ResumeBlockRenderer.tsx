@@ -10,6 +10,20 @@ type ResumeBlockRendererProps = {
   emphasizeResults?: boolean
 }
 
+const WORK_METADATA_PATTERN = /^(.+?) ((?:\d{4}\.\d{2}-\d{4}\.\d{2})|长期)$/u
+
+function parseWorkMetadata(text: string) {
+  const match = WORK_METADATA_PATTERN.exec(text)
+  if (!match) {
+    return null
+  }
+
+  return {
+    role: match[1],
+    period: match[2],
+  }
+}
+
 function unreachable(value: never): never {
   throw new Error(`Unsupported resume block: ${JSON.stringify(value)}`)
 }
@@ -19,11 +33,9 @@ export function ResumeBlockRenderer({
   emphasizeResults = false,
 }: ResumeBlockRendererProps) {
   const blockText = 'content' in block ? inlineText(block.content) : ''
-  const isWorkMetadata =
-    emphasizeResults &&
-    block.type === 'paragraph' &&
-    blockText.length < 80 &&
-    (/\d{4}\.\d{2}-\d{4}\.\d{2}/u.test(blockText) || blockText.endsWith(' 长期'))
+  const workMetadata = emphasizeResults && block.type === 'paragraph'
+    ? parseWorkMetadata(blockText)
+    : null
 
   switch (block.type) {
     case 'heading':
@@ -45,9 +57,22 @@ export function ResumeBlockRenderer({
         return <ToolStack text={blockText} />
       }
 
+      if (workMetadata) {
+        return (
+          <p className="resume-paragraph work-metadata" data-resume-line="true">
+            <span className="work-role-chip" data-work-role="true">
+              {workMetadata.role}
+            </span>{' '}
+            <span className="work-period" data-work-period="true">
+              {workMetadata.period}
+            </span>
+          </p>
+        )
+      }
+
       return (
         <p
-          className={`resume-paragraph${isWorkMetadata ? ' work-metadata' : ''}`}
+          className="resume-paragraph"
           data-resume-line="true"
         >
           <RichText nodes={block.content} emphasizeResults={emphasizeResults} />

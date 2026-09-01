@@ -74,6 +74,42 @@ test('gives profile tags the full content width on mobile', async ({ page }) => 
   expect(toolBox!.x).toBeLessThanOrEqual(contentBox!.x + 1)
 })
 
+test('renders all work positions as capsules with plain periods beside them', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  const roleCapsules = page.locator('[data-work-role="true"]')
+  const periods = page.locator('[data-work-period="true"]')
+  await expect(roleCapsules).toHaveCount(6)
+  await expect(periods).toHaveCount(6)
+  expect(await roleCapsules.allTextContents()).toEqual([
+    'AI 创新经理 / 产品经理（正职）',
+    '评论员',
+    'AI应用开发（实习）',
+    '项目经理/主管（实习）',
+    '数据标注/AI训练师',
+    '产品经理（实习）',
+  ])
+
+  const capsuleStyles = await roleCapsules.first().evaluate((capsule) => {
+    const styles = window.getComputedStyle(capsule)
+    return {
+      backgroundColor: styles.backgroundColor,
+      borderRadius: Number.parseFloat(styles.borderRadius),
+      minHeight: Number.parseFloat(styles.minHeight),
+    }
+  })
+  expect(capsuleStyles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+  expect(capsuleStyles.borderRadius).toBeGreaterThanOrEqual(20)
+  expect(capsuleStyles.minHeight).toBeGreaterThanOrEqual(24)
+
+  const firstRoleBox = await roleCapsules.first().boundingBox()
+  const firstPeriodBox = await periods.first().boundingBox()
+  expect(firstRoleBox).not.toBeNull()
+  expect(firstPeriodBox).not.toBeNull()
+  expect(firstPeriodBox!.x).toBeGreaterThanOrEqual(firstRoleBox!.x + firstRoleBox!.width)
+})
+
 test('reveals the matching campus detail on desktop hover', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
@@ -245,6 +281,20 @@ test('removes screen framing while preserving resume content for print', async (
   expect(printStyles.borderTopWidth).toBe('0px')
   expect(printStyles.boxShadow).toBe('none')
   expect(printStyles.text).toContain('【增长突破】')
+
+  const printRoleStyle = await page.locator('[data-work-role="true"]').first().evaluate(
+    (role) => {
+      const styles = window.getComputedStyle(role)
+      return {
+        backgroundColor: styles.backgroundColor,
+        borderStyle: styles.borderStyle,
+        boxShadow: styles.boxShadow,
+      }
+    },
+  )
+  expect(printRoleStyle.backgroundColor).toBe('rgb(255, 255, 255)')
+  expect(printRoleStyle.borderStyle).toBe('solid')
+  expect(printRoleStyle.boxShadow).toBe('none')
 
   const campusDetails = page.locator('[data-campus-detail]')
   await expect(campusDetails).toHaveCount(4)

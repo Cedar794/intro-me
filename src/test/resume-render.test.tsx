@@ -309,6 +309,41 @@ test('supports tap selection and Escape dismissal for campus details', () => {
   expect(organizationDetail).toHaveAttribute('aria-hidden', 'true')
 })
 
+test('renders every work position as a capsule while keeping its period separate', () => {
+  const { container } = render(<ResumeDocument document={resume} />)
+  const expectedRoles = [
+    'AI 创新经理 / 产品经理（正职）',
+    '评论员',
+    'AI应用开发（实习）',
+    '项目经理/主管（实习）',
+    '数据标注/AI训练师',
+    '产品经理（实习）',
+  ]
+  const expectedPeriods = [
+    '2026.03-2026.09',
+    '长期',
+    '2025.07-2026.03',
+    '2025.03-2025.06',
+    '2024.10-2024.11',
+    '2024.01-2024.10',
+  ]
+  const roleCapsules = Array.from(
+    container.querySelectorAll<HTMLElement>('[data-work-role="true"]'),
+  )
+  const periods = Array.from(
+    container.querySelectorAll<HTMLElement>('[data-work-period="true"]'),
+  )
+
+  expect(roleCapsules.map((role) => role.textContent)).toEqual(expectedRoles)
+  expect(periods.map((period) => period.textContent)).toEqual(expectedPeriods)
+
+  for (const [index, roleCapsule] of roleCapsules.entries()) {
+    const line = roleCapsule.closest('[data-resume-line="true"]')
+    expect(line).toHaveTextContent(`${expectedRoles[index]} ${expectedPeriods[index]}`)
+    expect(roleCapsule.contains(periods[index])).toBe(false)
+  }
+})
+
 test('emphasizes measurable work results without rewriting their text', () => {
   const { container } = render(<ResumeDocument document={resume} />)
 
