@@ -57,23 +57,3 @@ export function EducationSummary({ school, major }: EducationSummaryProps) {
     </div>
   )
 }
-
-export function CampusExperienceHeading({ text }: { text: string }) {
-  const abilityStart = text.indexOf('【')
-  const sectionLabel = abilityStart === -1 ? text : text.slice(0, abilityStart)
-  const abilityLabel = abilityStart === -1 ? '' : text.slice(abilityStart)
-
-  return (
-    <h2
-      className="resume-heading resume-heading-section campus-experience-heading"
-      data-resume-line="true"
-    >
-      <span>{sectionLabel}</span>
-      {abilityLabel ? (
-        <span className="campus-ability-badge" data-testid="campus-ability">
-          {abilityLabel}
-        </span>
-      ) : null}
-    </h2>
-  )
-}

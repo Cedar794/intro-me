@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { ResumeBlockRenderer } from '../components/ResumeBlockRenderer'
 import { ResumeDocument } from '../components/ResumeDocument'
 import links from '../data/resume-links.json'
@@ -183,16 +183,63 @@ test('places the exact major tag beside the school summary', () => {
   expect(educationSummary.querySelectorAll('[data-resume-line="true"]')).toHaveLength(2)
 })
 
-test('keeps the campus section semantic while styling its ability label separately', () => {
+test('renders the campus source list as a four-dimensional capability radar', () => {
   render(<ResumeDocument document={resume} />)
 
   const heading = screen.getByRole('heading', {
     level: 2,
     name: '校园经历【全领域创造能力】',
   })
-  expect(within(heading).getByTestId('campus-ability')).toHaveTextContent(
-    '【全领域创造能力】',
-  )
+  const radar = screen.getByTestId('campus-radar')
+  const dimensions = within(radar).getAllByRole('button', {
+    name: /能力|组织力/u,
+  })
+
+  expect(heading).toBeInTheDocument()
+  expect(dimensions.map((dimension) => dimension.textContent)).toEqual([
+    '创新创业赛事能力',
+    '校企活动组织力',
+    '外交类学术能力',
+    '艺术创作与多媒体处理能力',
+  ])
+  expect(radar).toHaveAttribute('data-active-dimension', '')
+  expect(radar.querySelectorAll('[data-campus-detail]')).toHaveLength(4)
+})
+
+test('reveals the matching campus detail on hover and hides it on leave', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  const innovationDimension = within(radar).getByRole('button', {
+    name: '创新创业赛事能力',
+  })
+  const innovationDetail = screen.getByTestId('campus-detail-0')
+
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+  fireEvent.mouseEnter(innovationDimension)
+  expect(innovationDimension).toHaveAttribute('aria-expanded', 'true')
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'false')
+  expect(innovationDetail).toHaveTextContent('打造"AI+"一站式智慧文旅平台')
+
+  fireEvent.mouseLeave(radar)
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+})
+
+test('supports tap selection and Escape dismissal for campus details', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  const organizationDimension = within(radar).getByRole('button', {
+    name: '校企活动组织力',
+  })
+  const organizationDetail = screen.getByTestId('campus-detail-1')
+
+  fireEvent.click(organizationDimension)
+  expect(organizationDetail).toHaveAttribute('aria-hidden', 'false')
+  expect(organizationDetail).toHaveTextContent('上海七校')
+
+  fireEvent.keyDown(radar, { key: 'Escape' })
+  expect(organizationDetail).toHaveAttribute('aria-hidden', 'true')
 })
 
 test('emphasizes measurable work results without rewriting their text', () => {

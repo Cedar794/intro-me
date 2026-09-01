@@ -18,7 +18,8 @@ for (const viewport of defaultViewports) {
     await expect(page.getByTestId('keyword-list').getByRole('listitem')).toHaveCount(8)
     await expect(page.getByTestId('tool-stack').getByRole('listitem')).toHaveCount(13)
     await expect(page.locator('[data-education-tag="true"]')).toBeVisible()
-    await expect(page.getByTestId('campus-ability')).toBeVisible()
+    await expect(page.getByTestId('campus-radar')).toBeVisible()
+    await expect(page.locator('[data-campus-dimension]')).toHaveCount(4)
 
     const dimensions = await page.evaluate(() => ({
       pageWidth: document.documentElement.scrollWidth,
@@ -73,6 +74,44 @@ test('gives profile tags the full content width on mobile', async ({ page }) => 
   expect(toolBox!.x).toBeLessThanOrEqual(contentBox!.x + 1)
 })
 
+test('reveals the matching campus detail on desktop hover', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  const radar = page.getByTestId('campus-radar')
+  const innovationDimension = page.getByRole('button', {
+    name: '创新创业赛事能力',
+  })
+  const innovationDetail = page.getByTestId('campus-detail-0')
+
+  await expect(innovationDetail).toBeHidden()
+  await innovationDimension.hover()
+  await expect(radar).toHaveAttribute('data-active-dimension', '0')
+  await expect(innovationDetail).toBeVisible()
+  await expect(innovationDetail).toContainText('打造"AI+"一站式智慧文旅平台')
+
+  await page.getByRole('heading', { level: 2, name: '实习与工作经历' }).hover()
+  await expect(innovationDetail).toBeHidden()
+})
+
+test('opens and closes campus detail by tap on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  const organizationDetail = page.getByTestId('campus-detail-1')
+  await page.getByRole('button', { name: '校企活动组织力' }).click()
+
+  await expect(organizationDetail).toBeVisible()
+  await expect(organizationDetail).toContainText('上海七校')
+  await page.getByRole('button', { name: '关闭校园经历详情' }).click()
+  await expect(organizationDetail).toBeHidden()
+
+  const hasOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth,
+  )
+  expect(hasOverflow).toBe(false)
+})
+
 test('removes screen framing while preserving resume content for print', async ({ page }) => {
   await page.emulateMedia({ media: 'print' })
   await page.goto('/')
@@ -89,4 +128,10 @@ test('removes screen framing while preserving resume content for print', async (
   expect(printStyles.borderTopWidth).toBe('0px')
   expect(printStyles.boxShadow).toBe('none')
   expect(printStyles.text).toContain('【增长突破】')
+
+  const campusDetails = page.locator('[data-campus-detail]')
+  await expect(campusDetails).toHaveCount(4)
+  for (const detail of await campusDetails.all()) {
+    await expect(detail).toBeVisible()
+  }
 })

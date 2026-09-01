@@ -234,42 +234,294 @@ select {
   line-height: 1.2;
 }
 
-.campus-experience-heading {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.campus-ability-badge {
+.campus-capability-section {
+  break-inside: avoid;
+}
+
+.campus-experience-heading {
+  margin-bottom: 8px;
+}
+
+.campus-radar {
   position: relative;
+  width: 100%;
+  min-height: 380px;
+  margin: 4px auto 8px;
+  isolation: isolate;
+}
+
+.campus-radar-map,
+.campus-radar-detail-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.campus-radar-map {
+  z-index: 1;
+}
+
+.campus-radar-visual {
+  position: absolute;
+  inset: 20px 50px;
+  display: grid;
+  place-items: center;
+  transition:
+    filter 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.campus-radar-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.campus-radar-grid {
+  fill: none;
+  stroke: #cbd5e1;
+  stroke-width: 1.5;
+}
+
+.campus-radar-field {
+  opacity: 0.16;
+  stroke: #64748b;
+  stroke-width: 1.5;
+}
+
+.campus-radar-point {
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.campus-radar-point--blue {
+  fill: #4285f4;
+}
+
+.campus-radar-point--red {
+  fill: #ea4335;
+}
+
+.campus-radar-point--yellow {
+  fill: #fbbc04;
+}
+
+.campus-radar-point--green {
+  fill: #34a853;
+}
+
+.campus-radar-center {
+  fill: #1f2937;
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.campus-radar-dimensions {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.campus-radar-dimension {
+  position: absolute;
   display: inline-flex;
-  min-height: 25px;
-  padding: 3px 10px 3px 15px;
+  max-width: 180px;
+  min-height: 34px;
+  padding: 5px 9px;
   align-items: center;
-  overflow: hidden;
-  color: #344054;
-  background: #f8fafc;
-  border: 1px solid #d8e0ea;
-  border-radius: 999px;
+  justify-content: center;
+  gap: 7px;
+  color: #263244;
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgb(15 23 42 / 6%);
+  cursor: pointer;
   font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.2;
+  line-height: 1.35;
+  text-align: center;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
-.campus-ability-badge::before {
+.campus-radar-dimension-marker {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.campus-radar-dimension--top {
+  top: 0;
+  left: 50%;
+  color: #185abc;
+  transform: translateX(-50%);
+}
+
+.campus-radar-dimension--right {
+  top: 50%;
+  right: 0;
+  color: #b3261e;
+  transform: translateY(-50%);
+}
+
+.campus-radar-dimension--bottom {
+  bottom: 0;
+  left: 50%;
+  color: #8a5a00;
+  transform: translateX(-50%);
+}
+
+.campus-radar-dimension--left {
+  top: 50%;
+  left: 0;
+  color: #137333;
+  transform: translateY(-50%);
+}
+
+.campus-radar-dimension:hover,
+.campus-radar-dimension:focus-visible,
+.campus-radar-dimension[data-active="true"] {
+  border-color: currentColor;
+  box-shadow: 0 6px 16px rgb(15 23 42 / 11%);
+  outline: none;
+}
+
+.campus-radar-dimension--top:hover,
+.campus-radar-dimension--top:focus-visible,
+.campus-radar-dimension--top[data-active="true"] {
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.campus-radar-dimension--right:hover,
+.campus-radar-dimension--right:focus-visible,
+.campus-radar-dimension--right[data-active="true"] {
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.campus-radar-dimension--bottom:hover,
+.campus-radar-dimension--bottom:focus-visible,
+.campus-radar-dimension--bottom[data-active="true"] {
+  transform: translateX(-50%) translateY(2px);
+}
+
+.campus-radar-dimension--left:hover,
+.campus-radar-dimension--left:focus-visible,
+.campus-radar-dimension--left[data-active="true"] {
+  transform: translateY(-50%) translateX(2px);
+}
+
+.campus-radar[data-active-dimension]:not([data-active-dimension=""]) .campus-radar-visual {
+  filter: blur(5px);
+  opacity: 0.2;
+  transform: scale(0.98);
+}
+
+.campus-radar[data-active-dimension]:not([data-active-dimension=""]) .campus-radar-dimension:not([data-active="true"]) {
+  opacity: 0.28;
+}
+
+.campus-radar-detail-layer {
+  inset: 46px 58px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.campus-radar-detail {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 5px;
-  background: linear-gradient(
-    180deg,
-    #4285f4 0 25%,
-    #ea4335 25% 50%,
-    #fbbc04 50% 75%,
-    #34a853 75% 100%
-  );
-  content: "";
+  inset: auto 0;
+  top: 50%;
+  width: 100%;
+  max-height: 288px;
+  padding: 18px 22px;
+  overflow: auto;
+  color: #202938;
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid #d8e0ea;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgb(15 23 42 / 14%);
+  font-size: 12.5px;
+  line-height: 1.55;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(-50% + 5px)) scale(0.985);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    visibility 180ms ease;
+}
+
+.campus-radar-detail[data-active="true"] {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+}
+
+.campus-radar-detail-title {
+  margin: 0 34px 8px 0;
+  color: #172033;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.campus-radar-detail .resume-list {
+  margin: 3px 0;
+}
+
+.campus-radar-detail .resume-list li {
+  margin: 2px 0;
+}
+
+.campus-radar-close {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  place-items: center;
+  color: #667085;
+  background: #fff;
+  border: 1px solid #d8e0ea;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.campus-radar-close:hover,
+.campus-radar-close:focus-visible {
+  color: #111827;
+  border-color: #667085;
+  outline: none;
+}
+
+.campus-radar-close svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.7;
 }
 
 .source-punctuation {
@@ -405,9 +657,37 @@ select {
 
   .keyword-chip,
   .tool-chip,
-  .education-tag,
-  .campus-ability-badge {
+  .education-tag {
     font-size: 12px;
+  }
+
+  .campus-radar {
+    min-height: 430px;
+  }
+
+  .campus-radar-visual {
+    inset: 34px 24px;
+  }
+
+  .campus-radar-dimension {
+    max-width: 132px;
+    padding: 5px 7px;
+    gap: 5px;
+    font-size: 11.5px;
+  }
+
+  .campus-radar-dimension--left,
+  .campus-radar-dimension--right {
+    max-width: 116px;
+  }
+
+  .campus-radar-detail-layer {
+    inset: 46px 10px 42px;
+  }
+
+  .campus-radar-detail {
+    max-height: 340px;
+    padding: 16px 17px;
   }
 
   .resume-list {
@@ -480,10 +760,70 @@ select {
     color: inherit;
   }
 
+  .campus-capability-section {
+    break-inside: auto;
+  }
+
+  .campus-radar {
+    min-height: 0;
+    margin-top: 3mm;
+  }
+
+  .campus-radar-map {
+    position: relative;
+    min-height: 250px;
+    break-inside: avoid;
+  }
+
+  .campus-radar-visual {
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .campus-radar-dimension {
+    color: #222;
+    background: #fff;
+    box-shadow: none;
+    opacity: 1 !important;
+  }
+
+  .campus-radar-detail-layer {
+    position: static;
+    pointer-events: auto;
+  }
+
+  .campus-radar-detail {
+    position: static;
+    max-height: none;
+    margin: 4mm 0 0;
+    padding: 0;
+    overflow: visible;
+    break-inside: avoid;
+    background: #fff;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .campus-radar-close {
+    display: none;
+  }
+
   .keyword-chip,
   .tool-chip,
-  .education-tag,
-  .campus-ability-badge {
+  .education-tag {
     background: #fff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campus-radar-visual,
+  .campus-radar-dimension,
+  .campus-radar-detail {
+    transition: none;
   }
 }

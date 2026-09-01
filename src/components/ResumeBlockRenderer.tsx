@@ -1,7 +1,7 @@
 import type { ResumeBlock } from '../data/resumeTypes'
 import { inlineText } from '../data/inlineText'
 import { NestedList } from './NestedList'
-import { CampusExperienceHeading, KeywordList } from './ProfileHighlights'
+import { KeywordList } from './ProfileHighlights'
 import { RichText } from './RichText'
 import { ToolStack } from './ToolStack'
 
@@ -27,10 +27,6 @@ export function ResumeBlockRenderer({
 
   switch (block.type) {
     case 'heading':
-      if (block.level === 2 && blockText === '校园经历【全领域创造能力】') {
-        return <CampusExperienceHeading text={blockText} />
-      }
-
       return block.level === 1 ? (
         <h1 className="resume-heading resume-heading-primary" data-resume-line="true">
           <RichText nodes={block.content} />

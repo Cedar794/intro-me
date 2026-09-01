@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { inlineText } from '../data/inlineText'
 import type { ResumeBlock } from '../data/resumeTypes'
 import type { ResumeDocumentData } from '../data/resumeTypes'
+import { CampusCapabilityRadar } from './CampusCapabilityRadar'
 import { EducationSummary } from './ProfileHighlights'
 import { ResumeBlockRenderer } from './ResumeBlockRenderer'
 import { ResumeHeader } from './ResumeHeader'
@@ -51,6 +52,21 @@ export function ResumeDocument({
       continue
     }
 
+    if (
+      isHeadingWithText(block, '校园经历【全领域创造能力】') &&
+      nextBlock?.type === 'list'
+    ) {
+      renderedBody.push(
+        <CampusCapabilityRadar
+          heading={block.content}
+          key="campus-capability-radar"
+          list={nextBlock}
+        />,
+      )
+      index += 1
+      continue
+    }
+
     renderedBody.push(
       <ResumeBlockRenderer
         block={block}
@@ -77,4 +93,11 @@ function isParagraphWithText(
   expectedText: string,
 ): block is Extract<ResumeBlock, { type: 'paragraph' }> {
   return block?.type === 'paragraph' && inlineText(block.content) === expectedText
+}
+
+function isHeadingWithText(
+  block: ResumeBlock | undefined,
+  expectedText: string,
+): block is Extract<ResumeBlock, { type: 'heading' }> {
+  return block?.type === 'heading' && inlineText(block.content) === expectedText
 }
