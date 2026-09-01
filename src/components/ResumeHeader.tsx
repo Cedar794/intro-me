@@ -1,26 +1,29 @@
-import type { ReactNode } from 'react'
+import type { EvidencePresentationItem } from '../data/evidencePresentation'
 import type { ResumeBlock } from '../data/resumeTypes'
+import { EvidenceAnchor, type EvidenceActivationHandler } from './EvidenceAnchor'
 import { ResumeBlockRenderer } from './ResumeBlockRenderer'
 
 type ResumeHeaderProps = {
   blocks: ResumeBlock[]
-  aside?: ReactNode
-  hasAside: boolean
+  evidenceItem?: EvidencePresentationItem
+  onEvidenceActivate?: EvidenceActivationHandler
 }
 
-export function ResumeHeader({ blocks, aside, hasAside }: ResumeHeaderProps) {
+export function ResumeHeader({
+  blocks,
+  evidenceItem,
+  onEvidenceActivate,
+}: ResumeHeaderProps) {
   return (
-    <header className="resume-header" data-has-photos={String(hasAside)}>
+    <header className="resume-header">
       <div className="resume-header-content" data-testid="resume-header-content">
         {blocks.map((block, index) => (
           <ResumeBlockRenderer key={`header-${index}`} block={block} />
         ))}
+        {evidenceItem ? (
+          <EvidenceAnchor item={evidenceItem} onActivate={onEvidenceActivate} />
+        ) : null}
       </div>
-      {aside ? (
-        <div className="resume-header-aside" data-testid="resume-header-aside">
-          {aside}
-        </div>
-      ) : null}
     </header>
   )
 }

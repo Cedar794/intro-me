@@ -1,16 +1,22 @@
 import type { ResumeBlock } from '../data/resumeTypes'
 import type { EvidenceResolver } from '../data/evidence'
+import {
+  findEvidencePresentation,
+  type EvidencePresentationItem,
+} from '../data/evidencePresentation'
 import { inlineText } from '../data/inlineText'
+import { EvidenceAnchor, type EvidenceActivationHandler } from './EvidenceAnchor'
 import { NestedList } from './NestedList'
 import { KeywordList } from './ProfileHighlights'
 import { RichText } from './RichText'
 import { ToolStack } from './ToolStack'
-import { ResumeEvidencePair } from './ResumeEvidencePair'
 
 type ResumeBlockRendererProps = {
   block: ResumeBlock
   emphasizeResults?: boolean
   evidenceResolver?: EvidenceResolver
+  evidencePresentation?: EvidencePresentationItem[]
+  onEvidenceActivate?: EvidenceActivationHandler
 }
 
 const WORK_METADATA_PATTERN = /^(.+?) ((?:\d{4}\.\d{2}-\d{4}\.\d{2})|长期)$/u
@@ -35,6 +41,8 @@ export function ResumeBlockRenderer({
   block,
   emphasizeResults = false,
   evidenceResolver,
+  evidencePresentation = [],
+  onEvidenceActivate,
 }: ResumeBlockRendererProps) {
   const blockText = 'content' in block ? inlineText(block.content) : ''
   const workMetadata = emphasizeResults && block.type === 'paragraph'
@@ -74,25 +82,31 @@ export function ResumeBlockRenderer({
         )
       }
 
-      const paragraph = (
+      const evidenceGroup = evidenceResolver?.(blockText)
+      const evidenceItem = evidenceGroup
+        ? findEvidencePresentation(evidenceGroup.id, evidencePresentation)
+        : undefined
+
+      return (
         <p
           className="resume-paragraph"
           data-resume-line="true"
         >
           <RichText nodes={block.content} emphasizeResults={emphasizeResults} />
+          {evidenceItem ? (
+            <EvidenceAnchor item={evidenceItem} onActivate={onEvidenceActivate} />
+          ) : null}
         </p>
       )
-      const evidenceGroup = evidenceResolver?.(blockText)
-
-      return evidenceGroup ? (
-        <ResumeEvidencePair group={evidenceGroup}>{paragraph}</ResumeEvidencePair>
-      ) : paragraph
     case 'list':
       return (
         <NestedList
           block={block}
           emphasizeResults={emphasizeResults}
+          evidenceMode="primary-anchor"
+          evidencePresentation={evidencePresentation}
           evidenceResolver={evidenceResolver}
+          onEvidenceActivate={onEvidenceActivate}
         />
       )
     case 'spacer':

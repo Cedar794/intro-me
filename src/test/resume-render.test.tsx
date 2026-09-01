@@ -119,48 +119,37 @@ test('renders every captured character, link, and top-level section in source or
   }
 })
 
-test('binds education and OUTPUT evidence to exact copy without changing source lines', () => {
-  const { container } = render(
-    <ResumeDocument document={resume} evidenceGroups={evidenceGroups} />,
-  )
+test('replaces ordinary and header evidence with ten primary source anchors', () => {
+  render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
+
+  const sheet = screen.getByTestId('resume-sheet')
+  const primaryIds = Array.from(
+    sheet.querySelectorAll('[data-evidence-anchor-primary="true"]'),
+  ).map((anchor) => anchor.getAttribute('data-evidence-anchor-id'))
 
   expect(
-    screen.getByTestId('resume-sheet').querySelectorAll(
+    sheet.querySelectorAll(
       '[data-evidence-image^="education"], [data-evidence-image^="output"]',
     ),
-  ).toHaveLength(10)
-
-  const thesisPair = container.querySelector(
-    '[data-evidence-anchor="毕业设计研究方向"]',
-  )
-  expect(thesisPair).toHaveTextContent('毕业设计研究方向')
-  expect(
-    thesisPair?.querySelector(
-      '[data-evidence-image="education-thesis-proposal"]',
-    ),
-  ).toBeInTheDocument()
-
-  const productPair = container.querySelector(
-    '[data-evidence-anchor="【产品统筹】"]',
-  )
-  expect(productPair).toHaveTextContent('【产品统筹】')
-  expect(
-    productPair?.querySelector(
-      '[data-evidence-image="output-product-orchestration"]',
-    ),
-  ).toBeInTheDocument()
-
-  const automationPair = container.querySelector(
-    '[data-evidence-anchor="【自动化与技术研究】"]',
-  )
-  expect(
-    Array.from(
-      automationPair?.querySelectorAll('[data-evidence-image]') ?? [],
-    ).map((image) => image.getAttribute('data-evidence-image')),
-  ).toEqual([
-    'output-automation-platform-1',
-    'output-automation-platform-2',
+  ).toHaveLength(0)
+  expect(primaryIds).toEqual([
+    'header-profiles',
+    'education-thesis',
+    'output-product',
+    'output-delivery',
+    'output-bilingual',
+    'output-agent-paas',
+    'output-monsora',
+    'output-capture',
+    'output-automation',
+    'output-team',
   ])
+  expect(
+    sheet.querySelector('[data-evidence-anchor-id="output-product"]'),
+  ).toHaveAttribute('aria-label', '查看证据 8：OUTPUT 产品统筹')
+  expect(
+    sheet.querySelector('[data-evidence-anchor-id="header-profiles"]'),
+  ).toHaveAttribute('aria-label', '查看证据 1：Codex Profile')
 })
 
 test('groups every personal keyword into a colored tag without changing the source line', () => {

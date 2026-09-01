@@ -1,9 +1,14 @@
 import type { ReactNode } from 'react'
 import { createEvidenceResolver, type EvidenceGroup } from '../data/evidence'
+import {
+  createEvidencePresentation,
+  findEvidencePresentation,
+} from '../data/evidencePresentation'
 import { inlineText } from '../data/inlineText'
 import type { ResumeBlock } from '../data/resumeTypes'
 import type { ResumeDocumentData } from '../data/resumeTypes'
 import { CampusCapabilityRadar } from './CampusCapabilityRadar'
+import type { EvidenceActivationHandler } from './EvidenceAnchor'
 import { EducationSummary } from './ProfileHighlights'
 import { ResumeBlockRenderer } from './ResumeBlockRenderer'
 import { ResumeHeader } from './ResumeHeader'
@@ -14,13 +19,15 @@ type ResumeDocumentProps = {
   evidenceGroups?: EvidenceGroup[]
   headerAside?: ReactNode
   hasHeaderAside?: boolean
+  onEvidenceActivate?: EvidenceActivationHandler
 }
 
 export function ResumeDocument({
   document,
   evidenceGroups = [],
-  headerAside,
-  hasHeaderAside = false,
+  headerAside: _headerAside,
+  hasHeaderAside: _hasHeaderAside,
+  onEvidenceActivate,
 }: ResumeDocumentProps) {
   const firstSectionIndex = document.blocks.findIndex(
     (block) => block.type === 'heading' && block.level === 2,
@@ -37,6 +44,12 @@ export function ResumeDocument({
   const educationEvidence = createEvidenceResolver('education', evidenceGroups)
   const campusEvidence = createEvidenceResolver('campus', evidenceGroups)
   const workEvidence = createEvidenceResolver('work', evidenceGroups)
+  const evidencePresentation = evidenceGroups.length > 0
+    ? createEvidencePresentation(evidenceGroups)
+    : []
+  const headerEvidence = evidencePresentation.length > 0
+    ? findEvidencePresentation('header-profiles', evidencePresentation)
+    : undefined
 
   const renderedBody: ReactNode[] = []
   for (let index = 0; index < bodyBlocks.length; index += 1) {
@@ -83,7 +96,9 @@ export function ResumeDocument({
             ? workEvidence
             : educationEvidence
         }
+        evidencePresentation={evidencePresentation}
         key={`body-${index}`}
+        onEvidenceActivate={onEvidenceActivate}
       />,
     )
   }
@@ -92,10 +107,13 @@ export function ResumeDocument({
     <article
       className="resume-sheet"
       data-testid="resume-sheet"
-      data-has-evidence={String(hasHeaderAside || evidenceGroups.length > 0)}
-      data-has-photos={String(hasHeaderAside)}
+      data-has-evidence={String(evidenceGroups.length > 0)}
     >
-      <ResumeHeader blocks={headerBlocks} aside={headerAside} hasAside={hasHeaderAside} />
+      <ResumeHeader
+        blocks={headerBlocks}
+        evidenceItem={headerEvidence}
+        onEvidenceActivate={onEvidenceActivate}
+      />
       <ResumeSection className="resume-body">{renderedBody}</ResumeSection>
     </article>
   )
