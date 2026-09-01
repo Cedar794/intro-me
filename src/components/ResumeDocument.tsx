@@ -77,10 +77,12 @@ export function ResumeDocument({
     ) {
       renderedBody.push(
         <CampusCapabilityRadar
+          evidencePresentation={evidencePresentation}
           evidenceResolver={campusEvidence}
           heading={block.content}
           key="campus-capability-radar"
           list={nextBlock}
+          onEvidenceActivate={onEvidenceActivate}
         />,
       )
       index += 1

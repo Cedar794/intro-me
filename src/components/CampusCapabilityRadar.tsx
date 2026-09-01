@@ -1,38 +1,47 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { EvidenceResolver } from '../data/evidence'
+import {
+  findEvidencePresentation,
+  type EvidencePresentationItem,
+  campusEvidenceGroupIdsByDimension,
+} from '../data/evidencePresentation'
 import type { InlineNode, ListBlock, ListItem } from '../data/resumeTypes'
 import { inlineText } from '../data/inlineText'
+import { EvidenceAnchor, type EvidenceActivationHandler } from './EvidenceAnchor'
 import { NestedList } from './NestedList'
-import { ResumeEvidencePair } from './ResumeEvidencePair'
 import { RichText } from './RichText'
 
 type CampusCapabilityRadarProps = {
   heading: InlineNode[]
   list: ListBlock
+  evidencePresentation?: EvidencePresentationItem[]
   evidenceResolver?: EvidenceResolver
+  onEvidenceActivate?: EvidenceActivationHandler
 }
 
 const DIMENSION_POSITIONS = ['top', 'right', 'bottom', 'left'] as const
 
 function CampusDetail({
   active,
+  evidencePresentation,
   evidenceResolver,
   index,
   item,
+  onEvidenceActivate,
   panelId,
 }: {
   active: boolean
+  evidencePresentation: EvidencePresentationItem[]
   evidenceResolver?: EvidenceResolver
   index: number
   item: ListItem
+  onEvidenceActivate?: EvidenceActivationHandler
   panelId: string
 }) {
   const titleEvidence = evidenceResolver?.(inlineText(item.content))
-  const title = (
-    <h3 className="campus-radar-detail-title" data-resume-line="true">
-      <RichText nodes={item.content} />
-    </h3>
-  )
+  const titleEvidenceItem = titleEvidence && evidencePresentation.length > 0
+    ? findEvidencePresentation(titleEvidence.id, evidencePresentation)
+    : undefined
 
   return (
     <section
@@ -43,14 +52,24 @@ function CampusDetail({
       data-testid={`campus-detail-${index}`}
       id={panelId}
     >
-      {titleEvidence ? (
-        <ResumeEvidencePair group={titleEvidence}>{title}</ResumeEvidencePair>
-      ) : title}
+      <h3 className="campus-radar-detail-title" data-resume-line="true">
+        <RichText nodes={item.content} />
+        {titleEvidenceItem ? (
+          <EvidenceAnchor
+            item={titleEvidenceItem}
+            onActivate={onEvidenceActivate}
+            primary={false}
+          />
+        ) : null}
+      </h3>
       {item.children.map((child, childIndex) => (
         <NestedList
           block={child}
+          evidenceMode="secondary-anchor"
+          evidencePresentation={evidencePresentation}
           evidenceResolver={evidenceResolver}
           key={`campus-${index}-detail-${childIndex}`}
+          onEvidenceActivate={onEvidenceActivate}
           path={`campus-${index}-detail-${childIndex}`}
         />
       ))}
@@ -59,9 +78,11 @@ function CampusDetail({
 }
 
 export function CampusCapabilityRadar({
+  evidencePresentation = [],
   evidenceResolver,
   heading,
   list,
+  onEvidenceActivate,
 }: CampusCapabilityRadarProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const radarRef = useRef<HTMLDivElement>(null)
@@ -162,24 +183,44 @@ export function CampusCapabilityRadar({
             {dimensions.map((item, index) => {
               const panelId = `${panelPrefix}-campus-detail-${index}`
               const active = activeIndex === index
+              const position = DIMENSION_POSITIONS[index]
+              const dimensionItems = evidencePresentation.length > 0
+                ? campusEvidenceGroupIdsByDimension[index].map((groupId) =>
+                  findEvidencePresentation(groupId, evidencePresentation),
+                )
+                : []
 
               return (
-                <button
-                  aria-controls={panelId}
-                  aria-expanded={active}
-                  className={`campus-radar-dimension campus-radar-dimension--${DIMENSION_POSITIONS[index]}`}
+                <div
+                  className={`campus-radar-dimension-wrap campus-radar-dimension-wrap--${position}`}
                   data-active={String(active)}
-                  data-campus-dimension="true"
                   key={inlineText(item.content)}
-                  onClick={() => showDetails(index)}
-                  onFocus={() => showDetails(index)}
                   onMouseMove={() => showDetails(index)}
-                  type="button"
                 >
-                  <span className="campus-radar-dimension-label">
-                    <RichText nodes={item.content} />
+                  <button
+                    aria-controls={panelId}
+                    aria-expanded={active}
+                    className="campus-radar-dimension"
+                    data-active={String(active)}
+                    data-campus-dimension="true"
+                    onClick={() => showDetails(index)}
+                    onFocus={() => showDetails(index)}
+                    type="button"
+                  >
+                    <span className="campus-radar-dimension-label">
+                      <RichText nodes={item.content} />
+                    </span>
+                  </button>
+                  <span className="campus-dimension-evidence-anchors">
+                    {dimensionItems.map((evidenceItem) => (
+                      <EvidenceAnchor
+                        item={evidenceItem}
+                        key={evidenceItem.group.id}
+                        onActivate={onEvidenceActivate}
+                      />
+                    ))}
                   </span>
-                </button>
+                </div>
               )
             })}
           </div>
@@ -188,10 +229,12 @@ export function CampusCapabilityRadar({
           {dimensions.map((item, index) => (
             <CampusDetail
               active={activeIndex === index}
+              evidencePresentation={evidencePresentation}
               evidenceResolver={evidenceResolver}
               index={index}
               item={item}
               key={`campus-detail-${inlineText(item.content)}`}
+              onEvidenceActivate={onEvidenceActivate}
               panelId={`${panelPrefix}-campus-detail-${index}`}
             />
           ))}

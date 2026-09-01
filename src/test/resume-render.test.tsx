@@ -119,7 +119,7 @@ test('renders every captured character, link, and top-level section in source or
   }
 })
 
-test('replaces ordinary and header evidence with ten primary source anchors', () => {
+test('replaces ordinary and header evidence with fifteen primary source anchors', () => {
   render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
 
   const sheet = screen.getByTestId('resume-sheet')
@@ -135,6 +135,11 @@ test('replaces ordinary and header evidence with ten primary source anchors', ()
   expect(primaryIds).toEqual([
     'header-profiles',
     'education-thesis',
+    'campus-yourgen',
+    'campus-event',
+    'campus-aipo',
+    'campus-model-un',
+    'campus-waarzegger',
     'output-product',
     'output-delivery',
     'output-bilingual',
@@ -277,46 +282,49 @@ test('reveals the matching campus detail on hover and hides it on leave', () => 
   expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
 })
 
-test('reveals mapped campus evidence inside the active radar detail', () => {
+test('anchors campus evidence to always-visible radar dimensions', () => {
   render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
 
-  const radar = screen.getByTestId('campus-radar')
-  fireEvent.mouseMove(
-    within(radar).getByRole('button', { name: '创新创业赛事能力' }),
+  const dimensions = screen.getByRole('group', { name: '校园能力维度' })
+  const dimensionAnchors = Array.from(
+    dimensions.querySelectorAll('[data-evidence-anchor-primary="true"]'),
   )
-  const innovationDetail = screen.getByTestId('campus-detail-0')
 
   expect(
-    Array.from(innovationDetail.querySelectorAll('[data-evidence-image]')).map(
-      (image) => image.getAttribute('data-evidence-image'),
-    ),
+    dimensionAnchors.map((anchor) => anchor.getAttribute('data-evidence-anchor-id')),
   ).toEqual([
-    'campus-yourgen-project',
-    'campus-yourgen-promotion-1',
-    'campus-yourgen-promotion-2',
+    'campus-yourgen',
+    'campus-event',
+    'campus-aipo',
+    'campus-model-un',
+    'campus-waarzegger',
   ])
-
-  fireEvent.mouseLeave(radar)
-  expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+  expect(
+    screen.getByTestId('resume-sheet').querySelectorAll(
+      '[data-evidence-anchor-primary="true"]',
+    ),
+  ).toHaveLength(15)
+  expect(
+    screen.getByTestId('resume-sheet').querySelectorAll('[data-evidence-image]'),
+  ).toHaveLength(0)
 })
 
-test('maps organization title and AIPO child evidence without a close button', () => {
+test('repeats exact campus numbers in detail without creating duplicate layout anchors', () => {
   render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
 
-  const radar = screen.getByTestId('campus-radar')
   fireEvent.click(
-    within(radar).getByRole('button', { name: '校企活动组织力' }),
+    screen.getByRole('button', { name: '校企活动组织力' }),
   )
   const detail = screen.getByTestId('campus-detail-1')
 
   expect(
-    Array.from(detail.querySelectorAll('[data-evidence-image]')).map((image) =>
-      image.getAttribute('data-evidence-image'),
-    ),
-  ).toEqual(['campus-event-organization', 'campus-aipo-competition'])
+    Array.from(
+      detail.querySelectorAll('[data-evidence-anchor-secondary="true"]'),
+    ).map((anchor) => anchor.getAttribute('data-evidence-anchor-id')),
+  ).toEqual(['campus-event', 'campus-aipo'])
   expect(
-    screen.queryByRole('button', { name: '关闭校园经历详情' }),
-  ).not.toBeInTheDocument()
+    detail.querySelectorAll('[data-evidence-anchor-primary="true"]'),
+  ).toHaveLength(0)
 })
 
 test('treats the revealed detail as part of the hover region', () => {
