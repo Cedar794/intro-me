@@ -632,7 +632,7 @@ test('binds education and OUTPUT evidence to exact copy without changing source 
 
   expect(
     screen.getByTestId('resume-sheet').querySelectorAll('[data-evidence-image]'),
-  ).toHaveLength(17)
+  ).toHaveLength(10)
 
   const thesisPair = container.querySelector(
     '[data-evidence-anchor="毕业设计研究方向"]',

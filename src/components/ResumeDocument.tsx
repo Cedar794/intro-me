@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { EvidenceGroup } from '../data/evidence'
+import { createEvidenceResolver, type EvidenceGroup } from '../data/evidence'
 import { inlineText } from '../data/inlineText'
 import type { ResumeBlock } from '../data/resumeTypes'
 import type { ResumeDocumentData } from '../data/resumeTypes'
@@ -34,6 +34,8 @@ export function ResumeDocument({
       block.level === 2 &&
       inlineText(block.content) === '实习与工作经历',
   )
+  const educationEvidence = createEvidenceResolver('education', evidenceGroups)
+  const workEvidence = createEvidenceResolver('work', evidenceGroups)
 
   const renderedBody: ReactNode[] = []
   for (let index = 0; index < bodyBlocks.length; index += 1) {
@@ -74,6 +76,11 @@ export function ResumeDocument({
       <ResumeBlockRenderer
         block={block}
         emphasizeResults={workSectionIndex !== -1 && index > workSectionIndex}
+        evidenceResolver={
+          workSectionIndex !== -1 && index > workSectionIndex
+            ? workEvidence
+            : educationEvidence
+        }
         key={`body-${index}`}
       />,
     )

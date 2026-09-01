@@ -868,6 +868,26 @@ select {
   line-height: 1.45;
 }
 
+.resume-evidence-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 33%);
+  gap: 30px;
+  align-items: start;
+  margin: 10px 0 14px;
+}
+
+.resume-evidence-copy {
+  min-width: 0;
+}
+
+.resume-evidence-copy > :first-child {
+  margin-top: 0;
+}
+
+.resume-evidence-copy > :last-child {
+  margin-bottom: 0;
+}
+
 .photo-panel-item {
   margin: 0;
 }

@@ -1,13 +1,16 @@
 import type { ResumeBlock } from '../data/resumeTypes'
+import type { EvidenceResolver } from '../data/evidence'
 import { inlineText } from '../data/inlineText'
 import { NestedList } from './NestedList'
 import { KeywordList } from './ProfileHighlights'
 import { RichText } from './RichText'
 import { ToolStack } from './ToolStack'
+import { ResumeEvidencePair } from './ResumeEvidencePair'
 
 type ResumeBlockRendererProps = {
   block: ResumeBlock
   emphasizeResults?: boolean
+  evidenceResolver?: EvidenceResolver
 }
 
 const WORK_METADATA_PATTERN = /^(.+?) ((?:\d{4}\.\d{2}-\d{4}\.\d{2})|长期)$/u
@@ -31,6 +34,7 @@ function unreachable(value: never): never {
 export function ResumeBlockRenderer({
   block,
   emphasizeResults = false,
+  evidenceResolver,
 }: ResumeBlockRendererProps) {
   const blockText = 'content' in block ? inlineText(block.content) : ''
   const workMetadata = emphasizeResults && block.type === 'paragraph'
@@ -70,7 +74,7 @@ export function ResumeBlockRenderer({
         )
       }
 
-      return (
+      const paragraph = (
         <p
           className="resume-paragraph"
           data-resume-line="true"
@@ -78,8 +82,19 @@ export function ResumeBlockRenderer({
           <RichText nodes={block.content} emphasizeResults={emphasizeResults} />
         </p>
       )
+      const evidenceGroup = evidenceResolver?.(blockText)
+
+      return evidenceGroup ? (
+        <ResumeEvidencePair group={evidenceGroup}>{paragraph}</ResumeEvidencePair>
+      ) : paragraph
     case 'list':
-      return <NestedList block={block} emphasizeResults={emphasizeResults} />
+      return (
+        <NestedList
+          block={block}
+          emphasizeResults={emphasizeResults}
+          evidenceResolver={evidenceResolver}
+        />
+      )
     case 'spacer':
       return (
         <div

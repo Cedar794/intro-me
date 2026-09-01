@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { ResumeBlockRenderer } from '../components/ResumeBlockRenderer'
 import { ResumeDocument } from '../components/ResumeDocument'
+import { evidenceGroups } from '../data/evidence'
 import links from '../data/resume-links.json'
 import resumeText from '../data/resume-text.txt?raw'
 import { resume } from '../data/resume'
@@ -80,7 +81,9 @@ function normalizeText(value: string) {
 }
 
 test('renders every captured character, link, and top-level section in source order', () => {
-  const { container } = render(<ResumeDocument document={resume} />)
+  const { container } = render(
+    <ResumeDocument document={resume} evidenceGroups={evidenceGroups} />,
+  )
   const sheet = screen.getByTestId('resume-sheet')
   const renderedLines = Array.from(container.querySelectorAll('[data-resume-line]'))
     .map((element) => element.textContent ?? '')
@@ -114,6 +117,48 @@ test('renders every captured character, link, and top-level section in source or
     expect(currentIndex).toBeGreaterThan(previousIndex)
     previousIndex = currentIndex
   }
+})
+
+test('binds education and OUTPUT evidence to exact copy without changing source lines', () => {
+  const { container } = render(
+    <ResumeDocument document={resume} evidenceGroups={evidenceGroups} />,
+  )
+
+  expect(
+    screen.getByTestId('resume-sheet').querySelectorAll('[data-evidence-image]'),
+  ).toHaveLength(10)
+
+  const thesisPair = container.querySelector(
+    '[data-evidence-anchor="毕业设计研究方向"]',
+  )
+  expect(thesisPair).toHaveTextContent('毕业设计研究方向')
+  expect(
+    thesisPair?.querySelector(
+      '[data-evidence-image="education-thesis-proposal"]',
+    ),
+  ).toBeInTheDocument()
+
+  const productPair = container.querySelector(
+    '[data-evidence-anchor="【产品统筹】"]',
+  )
+  expect(productPair).toHaveTextContent('【产品统筹】')
+  expect(
+    productPair?.querySelector(
+      '[data-evidence-image="output-product-orchestration"]',
+    ),
+  ).toBeInTheDocument()
+
+  const automationPair = container.querySelector(
+    '[data-evidence-anchor="【自动化与技术研究】"]',
+  )
+  expect(
+    Array.from(
+      automationPair?.querySelectorAll('[data-evidence-image]') ?? [],
+    ).map((image) => image.getAttribute('data-evidence-image')),
+  ).toEqual([
+    'output-automation-platform-1',
+    'output-automation-platform-2',
+  ])
 })
 
 test('groups every personal keyword into a colored tag without changing the source line', () => {
