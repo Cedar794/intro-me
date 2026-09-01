@@ -125,7 +125,9 @@ test('binds education and OUTPUT evidence to exact copy without changing source 
   )
 
   expect(
-    screen.getByTestId('resume-sheet').querySelectorAll('[data-evidence-image]'),
+    screen.getByTestId('resume-sheet').querySelectorAll(
+      '[data-evidence-image^="education"], [data-evidence-image^="output"]',
+    ),
   ).toHaveLength(10)
 
   const thesisPair = container.querySelector(
@@ -284,6 +286,48 @@ test('reveals the matching campus detail on hover and hides it on leave', () => 
 
   fireEvent.mouseLeave(radar)
   expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+})
+
+test('reveals mapped campus evidence inside the active radar detail', () => {
+  render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  fireEvent.mouseEnter(
+    within(radar).getByRole('button', { name: '创新创业赛事能力' }),
+  )
+  const innovationDetail = screen.getByTestId('campus-detail-0')
+
+  expect(
+    Array.from(innovationDetail.querySelectorAll('[data-evidence-image]')).map(
+      (image) => image.getAttribute('data-evidence-image'),
+    ),
+  ).toEqual([
+    'campus-yourgen-project',
+    'campus-yourgen-promotion-1',
+    'campus-yourgen-promotion-2',
+  ])
+
+  fireEvent.mouseLeave(radar)
+  expect(innovationDetail).toHaveAttribute('aria-hidden', 'true')
+})
+
+test('maps organization title and AIPO child evidence without a close button', () => {
+  render(<ResumeDocument document={resume} evidenceGroups={evidenceGroups} />)
+
+  const radar = screen.getByTestId('campus-radar')
+  fireEvent.click(
+    within(radar).getByRole('button', { name: '校企活动组织力' }),
+  )
+  const detail = screen.getByTestId('campus-detail-1')
+
+  expect(
+    Array.from(detail.querySelectorAll('[data-evidence-image]')).map((image) =>
+      image.getAttribute('data-evidence-image'),
+    ),
+  ).toEqual(['campus-event-organization', 'campus-aipo-competition'])
+  expect(
+    screen.queryByRole('button', { name: '关闭校园经历详情' }),
+  ).not.toBeInTheDocument()
 })
 
 test('treats the revealed detail as part of the hover region', () => {

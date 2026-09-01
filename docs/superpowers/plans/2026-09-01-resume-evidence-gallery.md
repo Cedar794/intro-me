@@ -631,7 +631,9 @@ test('binds education and OUTPUT evidence to exact copy without changing source 
   )
 
   expect(
-    screen.getByTestId('resume-sheet').querySelectorAll('[data-evidence-image]'),
+    screen.getByTestId('resume-sheet').querySelectorAll(
+      '[data-evidence-image^="education"], [data-evidence-image^="output"]',
+    ),
   ).toHaveLength(10)
 
   const thesisPair = container.querySelector(

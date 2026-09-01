@@ -1,18 +1,22 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import type { EvidenceResolver } from '../data/evidence'
 import type { InlineNode, ListBlock, ListItem } from '../data/resumeTypes'
 import { inlineText } from '../data/inlineText'
 import { NestedList } from './NestedList'
+import { ResumeEvidencePair } from './ResumeEvidencePair'
 import { RichText } from './RichText'
 
 type CampusCapabilityRadarProps = {
   heading: InlineNode[]
   list: ListBlock
+  evidenceResolver?: EvidenceResolver
 }
 
 const DIMENSION_POSITIONS = ['top', 'right', 'bottom', 'left'] as const
 
 function CampusDetail({
   active,
+  evidenceResolver,
   index,
   item,
   onHoverEnd,
@@ -20,12 +24,20 @@ function CampusDetail({
   panelId,
 }: {
   active: boolean
+  evidenceResolver?: EvidenceResolver
   index: number
   item: ListItem
   onHoverEnd: () => void
   onHoverStart: () => void
   panelId: string
 }) {
+  const titleEvidence = evidenceResolver?.(inlineText(item.content))
+  const title = (
+    <h3 className="campus-radar-detail-title" data-resume-line="true">
+      <RichText nodes={item.content} />
+    </h3>
+  )
+
   return (
     <section
       aria-hidden={!active}
@@ -37,12 +49,13 @@ function CampusDetail({
       onMouseEnter={onHoverStart}
       onMouseLeave={onHoverEnd}
     >
-      <h3 className="campus-radar-detail-title" data-resume-line="true">
-        <RichText nodes={item.content} />
-      </h3>
+      {titleEvidence ? (
+        <ResumeEvidencePair group={titleEvidence}>{title}</ResumeEvidencePair>
+      ) : title}
       {item.children.map((child, childIndex) => (
         <NestedList
           block={child}
+          evidenceResolver={evidenceResolver}
           key={`campus-${index}-detail-${childIndex}`}
           path={`campus-${index}-detail-${childIndex}`}
         />
@@ -52,6 +65,7 @@ function CampusDetail({
 }
 
 export function CampusCapabilityRadar({
+  evidenceResolver,
   heading,
   list,
 }: CampusCapabilityRadarProps) {
@@ -201,6 +215,7 @@ export function CampusCapabilityRadar({
           {dimensions.map((item, index) => (
             <CampusDetail
               active={activeIndex === index}
+              evidenceResolver={evidenceResolver}
               index={index}
               item={item}
               key={`campus-detail-${inlineText(item.content)}`}

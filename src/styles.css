@@ -245,7 +245,7 @@ select {
 .campus-radar {
   position: relative;
   width: 100%;
-  min-height: 350px;
+  min-height: 470px;
   margin: 4px auto 8px;
   isolation: isolate;
 }
@@ -660,7 +660,7 @@ select {
 }
 
 .campus-radar-detail-layer {
-  inset: 15% 12%;
+  inset: 8% 4%;
   z-index: 3;
   pointer-events: none;
 }
@@ -670,8 +670,8 @@ select {
   inset: auto 0;
   top: 50%;
   width: 100%;
-  max-height: 276px;
-  padding: 28px 40px;
+  max-height: 400px;
+  padding: 30px 36px;
   overflow: auto;
   color: #202938;
   background-color: transparent;
@@ -734,6 +734,15 @@ select {
 .campus-radar-detail .resume-list li {
   margin: 2px 0;
   padding-left: 0;
+}
+
+.campus-radar-detail .resume-evidence-pair {
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 36%);
+  gap: 24px;
+}
+
+.campus-radar-detail .resume-evidence-link img {
+  max-height: 180px;
 }
 
 .source-punctuation {

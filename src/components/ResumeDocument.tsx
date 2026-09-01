@@ -35,6 +35,7 @@ export function ResumeDocument({
       inlineText(block.content) === '实习与工作经历',
   )
   const educationEvidence = createEvidenceResolver('education', evidenceGroups)
+  const campusEvidence = createEvidenceResolver('campus', evidenceGroups)
   const workEvidence = createEvidenceResolver('work', evidenceGroups)
 
   const renderedBody: ReactNode[] = []
@@ -63,6 +64,7 @@ export function ResumeDocument({
     ) {
       renderedBody.push(
         <CampusCapabilityRadar
+          evidenceResolver={campusEvidence}
           heading={block.content}
           key="campus-capability-radar"
           list={nextBlock}
