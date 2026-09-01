@@ -187,21 +187,6 @@ select {
   color: #5b6472;
 }
 
-.tool-chip-monogram {
-  display: inline-grid;
-  place-items: center;
-  color: #fff;
-  background: linear-gradient(140deg, #3370ff 12%, #00b96b 88%);
-  border-radius: 4px;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.tool-chip-monogram::before {
-  content: "L";
-}
-
 .education-summary {
   display: flex;
   flex-wrap: wrap;

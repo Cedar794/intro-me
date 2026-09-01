@@ -165,6 +165,13 @@ test('renders every AI tool as an icon capsule without changing the source line'
   for (const item of toolItems) {
     expect(item.querySelector('[data-tool-icon="true"]')).toBeInTheDocument()
   }
+
+  const larkItem = toolItems.find((item) => item.textContent === 'Lark CLI')
+  const larkIcon = larkItem?.querySelector('[data-tool-icon="true"]')
+  expect(larkIcon).toBeInstanceOf(HTMLImageElement)
+  expect(larkIcon).toHaveAttribute('data-tool-brand', 'feishu')
+  expect(larkIcon?.getAttribute('src')).toMatch(/^data:image\/png;base64,/u)
+
   expect(toolStack.closest('[data-resume-line="true"]')).toHaveTextContent(
     'AI工具栈：ChatGPT Desktop、Deepseek Harness、即梦、Suno、Gemini App、Claude Code、Google AI Studio、Cowork、Lark CLI、OpenClaw、Hermes Agent、Seedance 2.5 API 及外部插件。',
   )
