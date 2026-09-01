@@ -80,6 +80,13 @@ test('renders every evidence image in exterior callouts and none in the sheet', 
   expect(sheet.querySelectorAll('[data-evidence-image]')).toHaveLength(0)
   expect(callouts).toHaveLength(15)
   expect(canvas.querySelectorAll('[data-evidence-image]')).toHaveLength(19)
+  expect(
+    Array.from(callouts).map((callout) => callout.getAttribute('data-evidence-side')),
+  ).toEqual([
+    'right', 'left', 'right', 'left', 'right',
+    'left', 'right', 'left', 'right', 'left',
+    'right', 'left', 'right', 'left', 'right',
+  ])
   expect(sheet.contains(callouts[0])).toBe(false)
 })
 
@@ -111,6 +118,7 @@ test('renders no narrow evidence until a primary or secondary anchor opens one g
   expect(document.querySelectorAll('[data-evidence-callout-id]')).toHaveLength(0)
   expect(document.querySelectorAll('[data-evidence-line-id]')).toHaveLength(0)
   expect(document.querySelectorAll('[data-evidence-image]')).toHaveLength(0)
+  expect(document.querySelectorAll('[data-evidence-anchor-primary="true"]')).toHaveLength(15)
 
   fireEvent.click(screen.getByRole('button', { name: '创新创业赛事能力' }))
   const yourgenAnchors = screen.getAllByRole('button', {

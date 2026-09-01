@@ -15,7 +15,11 @@ for (const viewport of defaultViewports) {
     await expect(page.getByRole('heading', { level: 1, name: '张悦' })).toBeVisible()
     await expect(page.getByTestId('resume-evidence-canvas')).toBeVisible()
     await expect(page.getByTestId('resume-sheet').locator('[data-evidence-image]')).toHaveCount(0)
+    await expect(page.locator('[data-evidence-anchor-primary="true"]')).toHaveCount(15)
     await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(
+      viewport.wide ? 15 : 0,
+    )
+    await expect(page.locator('[data-evidence-line-id]')).toHaveCount(
       viewport.wide ? 15 : 0,
     )
     await expect(page.locator('[data-evidence-image]')).toHaveCount(
@@ -24,6 +28,7 @@ for (const viewport of defaultViewports) {
     await expect(page.locator('a[href^="https://mp.weixin.qq.com/"]')).toHaveCount(6)
     await expect(page.getByTestId('keyword-list').getByRole('listitem')).toHaveCount(8)
     await expect(page.getByTestId('tool-stack').getByRole('listitem')).toHaveCount(13)
+    await expect(page.locator('[data-work-role="true"]')).toHaveCount(6)
     await expect(page.locator('[data-education-tag="true"]')).toBeVisible()
     await expect(page.getByTestId('campus-radar')).toBeVisible()
     await expect(page.locator('[data-campus-dimension]')).toHaveCount(4)
@@ -110,11 +115,34 @@ test('fits both exterior rails inside the canvas at 1320px', async ({ page }) =>
   expect(canvasBox).not.toBeNull()
 
   for (const callout of await page.locator('[data-evidence-callout-id]').all()) {
+    await expect(callout).toBeVisible()
     const box = await callout.boundingBox()
     expect(box).not.toBeNull()
     expect(box!.x).toBeGreaterThanOrEqual(canvasBox!.x)
     expect(box!.x + box!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width)
   }
+
+  const widthState = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }))
+  expect(widthState.scrollWidth).toBeLessThanOrEqual(widthState.viewportWidth)
+})
+
+test('switches from exterior rails to anchor-only mode without overflow', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(15)
+  await expect(page.locator('[data-evidence-line-id]')).toHaveCount(15)
+
+  await page.setViewportSize({ width: 1024, height: 900 })
+
+  await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(0)
+  await expect(page.locator('[data-evidence-line-id]')).toHaveCount(0)
+  await expect(page.locator('[data-evidence-image]')).toHaveCount(0)
+  await expect(page.locator('[data-evidence-anchor-primary="true"]')).toHaveCount(15)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1024)
 })
 
 test('opens only the selected evidence group from a mobile anchor', async ({ page }) => {
@@ -405,23 +433,68 @@ test('serves every local evidence asset and links to the original', async ({ pag
   expect(href).not.toBeNull()
   const response = await page.request.get(new URL(href!, page.url()).href)
   expect(response.ok()).toBe(true)
+
+  const popupPromise = page.waitForEvent('popup')
+  await originalLink.click()
+  const popup = await popupPromise
+  await popup.waitForLoadState('load')
+  const popupUrl = new URL(popup.url())
+  expect(popupUrl.origin).toBe(new URL(page.url()).origin)
+  expect(popupUrl.pathname).toMatch(/\/(?:src\/assets\/evidence|assets)\//u)
+  await popup.close()
 })
 
-test('hides all evidence and restores one-column A4 print flow', async ({ page }) => {
+test('prints only the clean A4 resume sheet', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.emulateMedia({ media: 'print' })
   await page.goto('/')
 
   await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(15)
-  await expect(page.locator('.resume-evidence-gallery')).toHaveCount(15)
-  for (const gallery of await page.locator('.resume-evidence-gallery').all()) {
-    await expect(gallery).toBeHidden()
-  }
-  for (const anchor of await page.locator('[data-evidence-anchor-id]').all()) {
-    await expect(anchor).toBeHidden()
+  await expect(page.locator('[data-evidence-line-id]')).toHaveCount(15)
+  await page.emulateMedia({ media: 'print' })
+
+  for (const selector of [
+    '[data-evidence-callout-id]',
+    '[data-evidence-line-id]',
+    '[data-evidence-anchor-id]',
+  ]) {
+    for (const element of await page.locator(selector).all()) {
+      await expect(element).toBeHidden()
+    }
   }
   await expect(page.locator('[data-evidence-viewer]')).toHaveCount(0)
   await expect(page.getByTestId('resume-sheet')).toBeVisible()
+  await expect(
+    page.getByTestId('resume-sheet').locator('[data-evidence-image]'),
+  ).toHaveCount(0)
+
+  const toolIcons = page.getByTestId('resume-sheet').locator('[data-tool-icon="true"]')
+  await expect(toolIcons).toHaveCount(13)
+  for (const toolIcon of await toolIcons.all()) {
+    await expect(toolIcon).toBeHidden()
+  }
+
+  const printLayout = await page.evaluate(() => {
+    const canvas = document.querySelector<HTMLElement>('.resume-evidence-canvas')
+    const sheet = document.querySelector<HTMLElement>('[data-testid="resume-sheet"]')
+    if (!canvas || !sheet) {
+      throw new Error('Missing resume print surfaces')
+    }
+    const canvasStyles = window.getComputedStyle(canvas)
+    const sheetStyles = window.getComputedStyle(sheet)
+    return {
+      canvasMinHeight: canvasStyles.minHeight,
+      canvasPosition: canvasStyles.position,
+      sheetBorderTopWidth: sheetStyles.borderTopWidth,
+      sheetBoxShadow: sheetStyles.boxShadow,
+      sheetWidth: sheetStyles.width,
+    }
+  })
+
+  expect(printLayout.canvasMinHeight).toBe('0px')
+  expect(printLayout.canvasPosition).toBe('static')
+  expect(printLayout.sheetBorderTopWidth).toBe('0px')
+  expect(printLayout.sheetBoxShadow).toBe('none')
+  expect(Number.parseFloat(printLayout.sheetWidth)).toBeGreaterThan(0)
 })
 
 test('removes screen framing while preserving resume content for print', async ({ page }) => {

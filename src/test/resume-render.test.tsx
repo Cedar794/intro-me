@@ -128,9 +128,7 @@ test('replaces ordinary and header evidence with fifteen primary source anchors'
   ).map((anchor) => anchor.getAttribute('data-evidence-anchor-id'))
 
   expect(
-    sheet.querySelectorAll(
-      '[data-evidence-image^="education"], [data-evidence-image^="output"]',
-    ),
+    sheet.querySelectorAll('[data-evidence-image]'),
   ).toHaveLength(0)
   expect(primaryIds).toEqual([
     'header-profiles',
@@ -155,6 +153,7 @@ test('replaces ordinary and header evidence with fifteen primary source anchors'
   expect(
     sheet.querySelector('[data-evidence-anchor-id="header-profiles"]'),
   ).toHaveAttribute('aria-label', '查看证据 1：Codex Profile')
+  expect(sheet.querySelectorAll('[data-tool-icon="true"]')).toHaveLength(13)
 })
 
 test('groups every personal keyword into a colored tag without changing the source line', () => {

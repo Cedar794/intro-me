@@ -1238,15 +1238,21 @@ select {
   }
 
   .resume-evidence-canvas {
+    position: static;
     width: 100%;
     margin: 0;
     min-height: 0 !important;
+    overflow: visible;
   }
 
   .evidence-callout,
   .evidence-leader-lines,
   .evidence-anchor,
   .evidence-viewer {
+    display: none !important;
+  }
+
+  [data-tool-icon="true"] {
     display: none !important;
   }
 
