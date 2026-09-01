@@ -145,6 +145,35 @@ test('switches from exterior rails to anchor-only mode without overflow', async 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1024)
 })
 
+test('keeps every primary evidence anchor visible inside the mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  const anchors = page.locator('[data-evidence-anchor-primary="true"]')
+  await expect(anchors).toHaveCount(15)
+  for (const anchor of await anchors.all()) {
+    await expect(anchor).toBeVisible()
+  }
+
+  const containment = await anchors.evaluateAll((nodes) => ({
+    viewportWidth: window.innerWidth,
+    boxes: nodes.map((node) => {
+      const rect = node.getBoundingClientRect()
+      return {
+        id: node.getAttribute('data-evidence-anchor-id'),
+        left: rect.left,
+        right: rect.right,
+      }
+    }),
+  }))
+
+  expect(
+    containment.boxes.filter(
+      (box) => box.left < 0 || box.right > containment.viewportWidth,
+    ),
+  ).toEqual([])
+})
+
 test('opens only the selected evidence group from a mobile anchor', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
