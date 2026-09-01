@@ -23,3 +23,8 @@ export function getPreviewPhotos(): EvidenceAsset[] {
   const previewEnabled = new URLSearchParams(window.location.search).get('photoPreview') === '1'
   return previewEnabled ? [previewPhoto] : []
 }
+
+export function getHeaderAssets(): EvidenceAsset[] {
+  const previewPhotos = getPreviewPhotos()
+  return previewPhotos.length > 0 ? previewPhotos : photos
+}

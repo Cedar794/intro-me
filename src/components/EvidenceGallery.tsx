@@ -3,13 +3,19 @@ import type { EvidenceGroup } from '../data/evidence'
 type EvidenceGalleryProps = {
   eager?: boolean
   group: EvidenceGroup
+  variant: 'callout' | 'viewer'
 }
 
-export function EvidenceGallery({ eager = false, group }: EvidenceGalleryProps) {
+export function EvidenceGallery({
+  eager = false,
+  group,
+  variant,
+}: EvidenceGalleryProps) {
   return (
     <div
-      className="resume-evidence-gallery"
+      className={`resume-evidence-gallery resume-evidence-gallery--${variant}`}
       data-evidence-group={group.id}
+      data-evidence-gallery-variant={variant}
       data-evidence-size={group.assets.length}
     >
       {group.assets.map((asset) => (

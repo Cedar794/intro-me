@@ -17,16 +17,12 @@ import { ResumeSection } from './ResumeSection'
 type ResumeDocumentProps = {
   document: ResumeDocumentData
   evidenceGroups?: EvidenceGroup[]
-  headerAside?: ReactNode
-  hasHeaderAside?: boolean
   onEvidenceActivate?: EvidenceActivationHandler
 }
 
 export function ResumeDocument({
   document,
   evidenceGroups = [],
-  headerAside: _headerAside,
-  hasHeaderAside: _hasHeaderAside,
   onEvidenceActivate,
 }: ResumeDocumentProps) {
   const firstSectionIndex = document.blocks.findIndex(

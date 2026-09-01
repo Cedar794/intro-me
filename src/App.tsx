@@ -1,19 +1,18 @@
-import { ResumePhotoLayout } from './components/ResumePhotoLayout'
+import { ResumeEvidenceCanvas } from './components/ResumeEvidenceCanvas'
 import { evidenceGroups } from './data/evidence'
-import { getPreviewPhotos, photos } from './data/photos'
+import { getHeaderAssets } from './data/photos'
 import { resume } from './data/resume'
 
 export function App() {
-  const previewPhotos = getPreviewPhotos()
-  const visiblePhotos = previewPhotos.length > 0 ? previewPhotos : photos
+  const visiblePhotos = getHeaderAssets()
 
   return (
     <main data-resume-root="true">
       <div className="resume-shell">
-        <ResumePhotoLayout
+        <ResumeEvidenceCanvas
           document={resume}
           evidenceGroups={evidenceGroups}
-          photos={visiblePhotos}
+          headerAssets={visiblePhotos}
         />
       </div>
     </main>

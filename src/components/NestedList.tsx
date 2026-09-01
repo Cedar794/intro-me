@@ -6,7 +6,6 @@ import {
 import { inlineText } from '../data/inlineText'
 import type { ListBlock } from '../data/resumeTypes'
 import { EvidenceAnchor, type EvidenceActivationHandler } from './EvidenceAnchor'
-import { ResumeEvidencePair } from './ResumeEvidencePair'
 import { RichText } from './RichText'
 
 type EvidenceMode = 'inline' | 'primary-anchor' | 'secondary-anchor'
@@ -55,9 +54,7 @@ export function NestedList({
 
         return (
           <li key={itemPath}>
-            {evidenceGroup && evidenceMode === 'inline' ? (
-              <ResumeEvidencePair group={evidenceGroup}>{line}</ResumeEvidencePair>
-            ) : line}
+            {line}
             {item.children.map((child, childIndex) => (
               <NestedList
                 key={`${itemPath}-child-${childIndex}`}
