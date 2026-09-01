@@ -37,6 +37,8 @@ select {
 }
 
 .resume-sheet {
+  position: relative;
+  z-index: 1;
   width: min(210mm, 100%);
   min-height: 297mm;
   margin: 0 auto;
@@ -71,7 +73,12 @@ select {
 }
 
 .resume-paragraph {
+  position: relative;
   margin: 5px 0;
+}
+
+.resume-header-content {
+  position: relative;
 }
 
 .profile-highlight-label {
@@ -760,6 +767,7 @@ select {
 }
 
 .resume-list li {
+  position: relative;
   margin: 4px 0;
   padding-left: 0.15rem;
 }
@@ -823,29 +831,29 @@ select {
 }
 
 .resume-evidence-canvas {
-  display: grid;
-  grid-template-columns: minmax(190px, 260px) minmax(0, 210mm) minmax(190px, 260px);
-  gap: 24px;
-  justify-content: center;
-  align-items: start;
-}
-
-.evidence-rail {
-  display: grid;
-  gap: 24px;
-  min-width: 0;
+  position: relative;
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+  overflow-x: clip;
 }
 
 .evidence-callout {
-  position: relative;
+  position: absolute;
+  z-index: 3;
+  width: clamp(210px, calc(50vw - 105mm - 36px), 260px);
   min-width: 0;
+  background: transparent;
+  box-shadow: none;
+  visibility: hidden;
 }
 
 .evidence-callout-number {
-  display: inline-flex;
+  position: absolute;
+  top: 21px;
+  z-index: 4;
+  display: flex;
   width: 22px;
   height: 22px;
-  margin-bottom: 7px;
   align-items: center;
   justify-content: center;
   color: #fff;
@@ -854,6 +862,116 @@ select {
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
+}
+
+.evidence-callout--left .evidence-callout-number {
+  right: -11px;
+}
+
+.evidence-callout--right .evidence-callout-number {
+  left: -11px;
+}
+
+.evidence-leader-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.evidence-leader-line {
+  fill: none;
+  stroke: #9aa3af;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+}
+
+.evidence-anchor {
+  position: relative;
+  z-index: 4;
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  margin: 0 4px;
+  padding: 0 5px;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #98a2b3;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.evidence-anchor::before {
+  content: attr(data-evidence-anchor-number);
+}
+
+.evidence-anchor:hover,
+.evidence-anchor:focus-visible {
+  color: #111827;
+  border-color: #374151;
+  outline: 2px solid rgb(55 65 81 / 20%);
+  outline-offset: 2px;
+}
+
+.resume-paragraph > .evidence-anchor--left,
+.resume-list li > [data-resume-line="true"] > .evidence-anchor--left {
+  position: absolute;
+  top: 0.16em;
+  left: -25px;
+  margin: 0;
+}
+
+.resume-header-content > .evidence-anchor {
+  position: absolute;
+  top: 0;
+  right: -25px;
+  margin: 0;
+}
+
+.campus-dimension-evidence-anchors {
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.campus-dimension-evidence-anchors .evidence-anchor {
+  position: absolute;
+  margin: 0;
+  pointer-events: auto;
+}
+
+.campus-radar-dimension-wrap--top .evidence-anchor--right {
+  top: 8px;
+  right: calc(50% - 124px);
+}
+
+.campus-radar-dimension-wrap--right .evidence-anchor--left {
+  top: calc(50% - 10px);
+  left: 4px;
+}
+
+.campus-radar-dimension-wrap--right .evidence-anchor--right {
+  top: calc(50% - 10px);
+  right: 4px;
+}
+
+.campus-radar-dimension-wrap--bottom .evidence-anchor--left {
+  bottom: 8px;
+  left: calc(50% - 124px);
+}
+
+.campus-radar-dimension-wrap--left .evidence-anchor--right {
+  top: calc(50% - 10px);
+  right: 4px;
 }
 
 .resume-evidence-gallery {
@@ -870,7 +988,6 @@ select {
 
 .resume-evidence-link {
   display: block;
-  border-radius: 4px;
   outline-offset: 3px;
 }
 
@@ -878,11 +995,10 @@ select {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 340px;
+  max-height: 280px;
   object-fit: contain;
-  background: #fafafa;
+  background: transparent;
   border: 1px solid #d6d9de;
-  border-radius: 4px;
 }
 
 .resume-evidence-item figcaption {
@@ -913,6 +1029,11 @@ select {
 
   .resume-shell {
     padding: 0;
+  }
+
+  .resume-evidence-canvas {
+    width: 100%;
+    margin: 0;
   }
 
   .resume-sheet {
@@ -1041,7 +1162,15 @@ select {
     widows: 2;
   }
 
-  .evidence-rail {
+  .resume-evidence-canvas {
+    width: 100%;
+    margin: 0;
+    min-height: 0 !important;
+  }
+
+  .evidence-callout,
+  .evidence-leader-lines,
+  .evidence-anchor {
     display: none !important;
   }
 

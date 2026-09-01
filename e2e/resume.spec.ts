@@ -13,8 +13,9 @@ for (const viewport of defaultViewports) {
 
     await expect(page.locator('main[data-resume-root="true"]')).toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: '张悦' })).toBeVisible()
-    await expect(page.getByTestId('photo-panel')).toBeVisible()
-    await expect(page.getByTestId('photo-panel').getByRole('img')).toHaveCount(2)
+    await expect(page.getByTestId('resume-evidence-canvas')).toBeVisible()
+    await expect(page.getByTestId('resume-sheet').locator('[data-evidence-image]')).toHaveCount(0)
+    await expect(page.locator('[data-evidence-callout-id]')).toHaveCount(15)
     await expect(page.locator('[data-evidence-image]')).toHaveCount(19)
     await expect(page.locator('a[href^="https://mp.weixin.qq.com/"]')).toHaveCount(6)
     await expect(page.getByTestId('keyword-list').getByRole('listitem')).toHaveCount(8)
@@ -31,34 +32,85 @@ for (const viewport of defaultViewports) {
   })
 }
 
-test('places the optional photo to the right of desktop header content', async ({ page }) => {
+test('keeps every desktop evidence image outside the sheet in alternating rails', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/?photoPreview=1')
+  await page.goto('/')
 
-  await expect(page.getByTestId('photo-panel')).toBeVisible()
-  await expect(page.getByTestId('resume-sheet')).toHaveAttribute('data-has-photos', 'true')
+  const sheet = page.getByTestId('resume-sheet')
+  const callouts = page.locator('[data-evidence-callout-id]')
+  const lines = page.locator('[data-evidence-line-id]')
+  const sheetBox = await sheet.boundingBox()
 
-  const contentBox = await page.getByTestId('resume-header-content').boundingBox()
-  const asideBox = await page.getByTestId('resume-header-aside').boundingBox()
-  expect(contentBox).not.toBeNull()
-  expect(asideBox).not.toBeNull()
-  expect(asideBox!.x).toBeGreaterThanOrEqual(contentBox!.x + contentBox!.width)
+  expect(sheetBox).not.toBeNull()
+  await expect(callouts).toHaveCount(15)
+  await expect(lines).toHaveCount(15)
+
+  for (let index = 0; index < 15; index += 1) {
+    const callout = callouts.nth(index)
+    const box = await callout.boundingBox()
+    const side = await callout.getAttribute('data-evidence-side')
+    const groupId = await callout.getAttribute('data-evidence-callout-id')
+    const number = String(index + 1)
+    const anchor = page.locator(
+      '[data-evidence-anchor-primary="true"][data-evidence-anchor-id="' + groupId + '"]',
+    )
+    const line = page.locator('[data-evidence-line-id="' + groupId + '"]')
+
+    expect(box).not.toBeNull()
+    await expect(anchor).toHaveAttribute('data-evidence-anchor-number', number)
+    await expect(line).toHaveAttribute('data-evidence-number', number)
+    if (side === 'left') {
+      expect(box!.x + box!.width).toBeLessThanOrEqual(sheetBox!.x)
+    } else {
+      expect(box!.x).toBeGreaterThanOrEqual(sheetBox!.x + sheetBox!.width)
+    }
+    expect(side).toBe(index % 2 === 0 ? 'right' : 'left')
+  }
 })
 
-test('stacks the optional photo below header content on mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/?photoPreview=1')
+test('prevents same-side callout overlap', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
 
-  const contentBox = await page.getByTestId('resume-header-content').boundingBox()
-  const asideBox = await page.getByTestId('resume-header-aside').boundingBox()
-  expect(contentBox).not.toBeNull()
-  expect(asideBox).not.toBeNull()
-  expect(asideBox!.y).toBeGreaterThanOrEqual(contentBox!.y + contentBox!.height)
+  for (const side of ['left', 'right']) {
+    const sideCallouts = page.locator(
+      '[data-evidence-callout-id][data-evidence-side="' + side + '"]',
+    )
+    const positions = await sideCallouts.evaluateAll((nodes) =>
+      nodes.map((node) => window.getComputedStyle(node).position),
+    )
+    expect(positions.every((position) => position === 'absolute')).toBe(true)
 
-  const hasOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > window.innerWidth,
-  )
-  expect(hasOverflow).toBe(false)
+    const boxes = await sideCallouts
+      .evaluateAll((nodes) =>
+        nodes
+          .map((node) => {
+            const rect = node.getBoundingClientRect()
+            return { top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY }
+          })
+          .sort((a, b) => a.top - b.top),
+      )
+
+    for (let index = 1; index < boxes.length; index += 1) {
+      expect(boxes[index].top).toBeGreaterThanOrEqual(boxes[index - 1].bottom + 23)
+    }
+  }
+})
+
+test('fits both exterior rails inside the canvas at 1320px', async ({ page }) => {
+  await page.setViewportSize({ width: 1320, height: 900 })
+  await page.goto('/')
+
+  await expect(page.locator('[data-evidence-line-id]')).toHaveCount(15)
+  const canvasBox = await page.getByTestId('resume-evidence-canvas').boundingBox()
+  expect(canvasBox).not.toBeNull()
+
+  for (const callout of await page.locator('[data-evidence-callout-id]').all()) {
+    const box = await callout.boundingBox()
+    expect(box).not.toBeNull()
+    expect(box!.x).toBeGreaterThanOrEqual(canvasBox!.x)
+    expect(box!.x + box!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width)
+  }
 })
 
 test('gives profile tags the full content width on mobile', async ({ page }) => {
@@ -265,35 +317,6 @@ test('opens and dismisses campus detail by tapping outside on mobile', async ({ 
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(hasOverflow).toBe(false)
-})
-
-test('places mapped copy left of evidence on desktop', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 })
-  await page.goto('/')
-
-  const pair = page.locator('[data-evidence-anchor="【产品统筹】"]')
-  const copyBox = await pair.locator('.resume-evidence-copy').boundingBox()
-  const galleryBox = await pair.locator('.resume-evidence-gallery').boundingBox()
-
-  expect(copyBox).not.toBeNull()
-  expect(galleryBox).not.toBeNull()
-  expect(galleryBox!.x).toBeGreaterThanOrEqual(copyBox!.x + copyBox!.width)
-})
-
-test('stacks mapped evidence after copy on mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/')
-
-  const pair = page.locator('[data-evidence-anchor="【产品统筹】"]')
-  const copyBox = await pair.locator('.resume-evidence-copy').boundingBox()
-  const galleryBox = await pair.locator('.resume-evidence-gallery').boundingBox()
-
-  expect(copyBox).not.toBeNull()
-  expect(galleryBox).not.toBeNull()
-  expect(galleryBox!.y).toBeGreaterThanOrEqual(copyBox!.y + copyBox!.height)
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-    390,
-  )
 })
 
 test('serves every local evidence asset and links to the original', async ({ page }) => {

@@ -1,9 +1,11 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import type { EvidenceAsset, EvidenceGroup } from '../data/evidence'
 import { createEvidencePresentation } from '../data/evidencePresentation'
 import type { ResumeDocumentData } from '../data/resumeTypes'
+import { useEvidenceLayout } from '../hooks/useEvidenceLayout'
 import type { EvidenceActivationHandler } from './EvidenceAnchor'
 import { EvidenceCallout } from './EvidenceCallout'
+import { EvidenceLeaderLines } from './EvidenceLeaderLines'
 import { ResumeDocument } from './ResumeDocument'
 
 type ResumeEvidenceCanvasProps = {
@@ -17,7 +19,13 @@ export function ResumeEvidenceCanvas({
   evidenceGroups,
   headerAssets,
 }: ResumeEvidenceCanvasProps) {
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const sheetRef = useRef<HTMLElement>(null)
   const calloutElements = useRef(new Map<string, HTMLElement>())
+  const registerCanvas = useCallback((element: HTMLDivElement | null) => {
+    canvasRef.current = element
+    sheetRef.current = element?.querySelector<HTMLElement>('[data-testid="resume-sheet"]') ?? null
+  }, [])
   const registerElement = useCallback((groupId: string, element: HTMLElement | null) => {
     if (element) {
       calloutElements.current.set(groupId, element)
@@ -32,30 +40,49 @@ export function ResumeEvidenceCanvas({
       ?.querySelector<HTMLAnchorElement>('.resume-evidence-link')
       ?.focus()
   }, [])
-  const effectiveGroups = evidenceGroups.map((group) =>
-    group.id === 'header-profiles' ? { ...group, assets: headerAssets } : group,
+  const effectiveGroups = useMemo(
+    () => evidenceGroups.map((group) =>
+      group.id === 'header-profiles' ? { ...group, assets: headerAssets } : group,
+    ),
+    [evidenceGroups, headerAssets],
   )
-  const presentation = createEvidencePresentation(effectiveGroups)
-  const leftItems = presentation.filter((item) => item.side === 'left')
-  const rightItems = presentation.filter((item) => item.side === 'right')
+  const presentation = useMemo(
+    () => createEvidencePresentation(effectiveGroups),
+    [effectiveGroups],
+  )
+  const layout = useEvidenceLayout({
+    canvasRef,
+    sheetRef,
+    presentationItems: presentation,
+    wide: true,
+  })
 
   return (
-    <div className="resume-evidence-canvas" data-testid="resume-evidence-canvas">
-      <section aria-label="左侧证据" className="evidence-rail evidence-rail--left">
-        {leftItems.map((item) => (
-          <EvidenceCallout item={item} key={item.group.id} registerElement={registerElement} />
-        ))}
-      </section>
+    <div
+      className="resume-evidence-canvas"
+      data-testid="resume-evidence-canvas"
+      ref={registerCanvas}
+      style={{ minHeight: layout ? `${layout.canvasHeight}px` : undefined }}
+    >
       <ResumeDocument
         document={document}
         evidenceGroups={effectiveGroups}
         onEvidenceActivate={onEvidenceActivate}
       />
-      <section aria-label="右侧证据" className="evidence-rail evidence-rail--right">
-        {rightItems.map((item) => (
-          <EvidenceCallout item={item} key={item.group.id} registerElement={registerElement} />
-        ))}
-      </section>
+      {layout ? (
+        <EvidenceLeaderLines
+          height={layout.canvasHeight}
+          items={layout.items}
+          width={layout.canvasWidth}
+        />
+      ) : null}
+      {presentation.map((item) => (
+        <EvidenceCallout
+          item={item}
+          key={item.group.id}
+          registerElement={registerElement}
+        />
+      ))}
     </div>
   )
 }
