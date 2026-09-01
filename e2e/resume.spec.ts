@@ -15,6 +15,10 @@ for (const viewport of defaultViewports) {
     await expect(page.getByRole('heading', { level: 1, name: '张悦' })).toBeVisible()
     await expect(page.getByTestId('photo-panel')).toHaveCount(0)
     await expect(page.locator('a[href^="https://mp.weixin.qq.com/"]')).toHaveCount(6)
+    await expect(page.getByTestId('keyword-list').getByRole('listitem')).toHaveCount(8)
+    await expect(page.getByTestId('tool-stack').getByRole('listitem')).toHaveCount(13)
+    await expect(page.locator('[data-education-tag="true"]')).toBeVisible()
+    await expect(page.getByTestId('campus-ability')).toBeVisible()
 
     const dimensions = await page.evaluate(() => ({
       pageWidth: document.documentElement.scrollWidth,
@@ -52,6 +56,21 @@ test('stacks the optional photo below header content on mobile', async ({ page }
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(hasOverflow).toBe(false)
+})
+
+test('gives profile tags the full content width on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  const contentBox = await page.getByTestId('resume-header-content').boundingBox()
+  const keywordBox = await page.getByTestId('keyword-list').boundingBox()
+  const toolBox = await page.getByTestId('tool-stack').boundingBox()
+
+  expect(contentBox).not.toBeNull()
+  expect(keywordBox).not.toBeNull()
+  expect(toolBox).not.toBeNull()
+  expect(keywordBox!.x).toBeLessThanOrEqual(contentBox!.x + 1)
+  expect(toolBox!.x).toBeLessThanOrEqual(contentBox!.x + 1)
 })
 
 test('removes screen framing while preserving resume content for print', async ({ page }) => {

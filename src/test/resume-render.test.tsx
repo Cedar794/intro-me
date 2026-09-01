@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { ResumeBlockRenderer } from '../components/ResumeBlockRenderer'
 import { ResumeDocument } from '../components/ResumeDocument'
 import links from '../data/resume-links.json'
@@ -114,4 +114,94 @@ test('renders every captured character, link, and top-level section in source or
     expect(currentIndex).toBeGreaterThan(previousIndex)
     previousIndex = currentIndex
   }
+})
+
+test('groups every personal keyword into a colored tag without changing the source line', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const keywordList = screen.getByTestId('keyword-list')
+  const keywordItems = within(keywordList).getAllByRole('listitem')
+  const expectedKeywords = [
+    'AI Native 产品人',
+    '技术型产品经理',
+    '0→1 Builder',
+    '系统化产品思维',
+    '数据与评测驱动',
+    '跨团队交付',
+    '多语种跨文化',
+    '长期主义',
+  ]
+
+  expect(keywordItems).toHaveLength(expectedKeywords.length)
+  expect(keywordItems.map((item) => item.textContent)).toEqual(expectedKeywords)
+  expect(keywordList.closest('[data-resume-line="true"]')).toHaveTextContent(
+    '个人关键词：AI Native 产品人｜技术型产品经理｜0→1 Builder｜系统化产品思维｜数据与评测驱动｜跨团队交付｜多语种跨文化｜长期主义',
+  )
+})
+
+test('renders every AI tool as an icon capsule without changing the source line', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const toolStack = screen.getByTestId('tool-stack')
+  const toolItems = within(toolStack).getAllByRole('listitem')
+  const expectedTools = [
+    'ChatGPT Desktop',
+    'Deepseek Harness',
+    '即梦',
+    'Suno',
+    'Gemini App',
+    'Claude Code',
+    'Google AI Studio',
+    'Cowork',
+    'Lark CLI',
+    'OpenClaw',
+    'Hermes Agent',
+    'Seedance 2.5 API',
+    '外部插件',
+  ]
+
+  expect(toolItems).toHaveLength(expectedTools.length)
+  expect(toolItems.map((item) => item.textContent)).toEqual(expectedTools)
+  for (const item of toolItems) {
+    expect(item.querySelector('[data-tool-icon="true"]')).toBeInTheDocument()
+  }
+  expect(toolStack.closest('[data-resume-line="true"]')).toHaveTextContent(
+    'AI工具栈：ChatGPT Desktop、Deepseek Harness、即梦、Suno、Gemini App、Claude Code、Google AI Studio、Cowork、Lark CLI、OpenClaw、Hermes Agent、Seedance 2.5 API 及外部插件。',
+  )
+})
+
+test('places the exact major tag beside the school summary', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const educationSummary = screen.getByTestId('education-summary')
+  expect(
+    within(educationSummary).getByText('上海外国语大学全日制（211）2023.9 - 2027.7'),
+  ).toBeInTheDocument()
+  expect(
+    within(educationSummary).getByText('荷兰语（英语）专业 （A+专业）'),
+  ).toHaveAttribute('data-education-tag', 'true')
+  expect(educationSummary.querySelectorAll('[data-resume-line="true"]')).toHaveLength(2)
+})
+
+test('keeps the campus section semantic while styling its ability label separately', () => {
+  render(<ResumeDocument document={resume} />)
+
+  const heading = screen.getByRole('heading', {
+    level: 2,
+    name: '校园经历【全领域创造能力】',
+  })
+  expect(within(heading).getByTestId('campus-ability')).toHaveTextContent(
+    '【全领域创造能力】',
+  )
+})
+
+test('emphasizes measurable work results without rewriting their text', () => {
+  const { container } = render(<ResumeDocument document={resume} />)
+
+  const highlightedResults = Array.from(
+    container.querySelectorAll('strong[data-result-highlight="true"]'),
+  ).map((element) => element.textContent ?? '')
+
+  expect(highlightedResults.some((text) => text.includes('2,530 个文件'))).toBe(true)
+  expect(highlightedResults.some((text) => text.includes('200+'))).toBe(true)
 })

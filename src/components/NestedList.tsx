@@ -3,10 +3,15 @@ import { RichText } from './RichText'
 
 type NestedListProps = {
   block: ListBlock
+  emphasizeResults?: boolean
   path?: string
 }
 
-export function NestedList({ block, path = 'list' }: NestedListProps) {
+export function NestedList({
+  block,
+  emphasizeResults = false,
+  path = 'list',
+}: NestedListProps) {
   const ListTag = block.ordered ? 'ol' : 'ul'
 
   return (
@@ -16,12 +21,13 @@ export function NestedList({ block, path = 'list' }: NestedListProps) {
         return (
           <li key={itemPath}>
             <span data-resume-line="true">
-              <RichText nodes={item.content} />
+              <RichText nodes={item.content} emphasizeResults={emphasizeResults} />
             </span>
             {item.children.map((child, childIndex) => (
               <NestedList
                 key={`${itemPath}-child-${childIndex}`}
                 block={child}
+                emphasizeResults={emphasizeResults}
                 path={`${itemPath}-child-${childIndex}`}
               />
             ))}

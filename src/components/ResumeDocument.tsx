@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
+import { inlineText } from '../data/inlineText'
+import type { ResumeBlock } from '../data/resumeTypes'
 import type { ResumeDocumentData } from '../data/resumeTypes'
+import { EducationSummary } from './ProfileHighlights'
 import { ResumeBlockRenderer } from './ResumeBlockRenderer'
 import { ResumeHeader } from './ResumeHeader'
 import { ResumeSection } from './ResumeSection'
@@ -21,6 +24,41 @@ export function ResumeDocument({
   const headerEnd = firstSectionIndex === -1 ? document.blocks.length : firstSectionIndex
   const headerBlocks = document.blocks.slice(0, headerEnd)
   const bodyBlocks = document.blocks.slice(headerEnd)
+  const workSectionIndex = bodyBlocks.findIndex(
+    (block) =>
+      block.type === 'heading' &&
+      block.level === 2 &&
+      inlineText(block.content) === '实习与工作经历',
+  )
+
+  const renderedBody: ReactNode[] = []
+  for (let index = 0; index < bodyBlocks.length; index += 1) {
+    const block = bodyBlocks[index]
+    const nextBlock = bodyBlocks[index + 1]
+
+    if (
+      isParagraphWithText(block, '上海外国语大学全日制（211）2023.9 - 2027.7') &&
+      isParagraphWithText(nextBlock, '荷兰语（英语）专业 （A+专业）')
+    ) {
+      renderedBody.push(
+        <EducationSummary
+          key="education-summary"
+          major={nextBlock.content}
+          school={block.content}
+        />,
+      )
+      index += 1
+      continue
+    }
+
+    renderedBody.push(
+      <ResumeBlockRenderer
+        block={block}
+        emphasizeResults={workSectionIndex !== -1 && index > workSectionIndex}
+        key={`body-${index}`}
+      />,
+    )
+  }
 
   return (
     <article
@@ -29,11 +67,14 @@ export function ResumeDocument({
       data-has-photos={String(hasHeaderAside)}
     >
       <ResumeHeader blocks={headerBlocks} aside={headerAside} hasAside={hasHeaderAside} />
-      <ResumeSection className="resume-body">
-        {bodyBlocks.map((block, index) => (
-          <ResumeBlockRenderer key={`body-${index}`} block={block} />
-        ))}
-      </ResumeSection>
+      <ResumeSection className="resume-body">{renderedBody}</ResumeSection>
     </article>
   )
+}
+
+function isParagraphWithText(
+  block: ResumeBlock | undefined,
+  expectedText: string,
+): block is Extract<ResumeBlock, { type: 'paragraph' }> {
+  return block?.type === 'paragraph' && inlineText(block.content) === expectedText
 }

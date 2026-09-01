@@ -86,6 +86,203 @@ select {
   margin: 5px 0;
 }
 
+.profile-highlight-label {
+  flex: 0 0 auto;
+  line-height: 26px;
+  white-space: nowrap;
+}
+
+.keyword-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 8px 0 7px;
+}
+
+.keyword-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.keyword-chip {
+  display: inline-flex;
+  min-height: 26px;
+  padding: 3px 9px;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.keyword-chip--tone-1 {
+  color: #185abc;
+  background: #e8f0fe;
+  border-color: #c6dafc;
+}
+
+.keyword-chip--tone-2 {
+  color: #b3261e;
+  background: #fce8e6;
+  border-color: #f6c8c4;
+}
+
+.keyword-chip--tone-3 {
+  color: #7a4f01;
+  background: #fef7e0;
+  border-color: #f8df95;
+}
+
+.keyword-chip--tone-4 {
+  color: #137333;
+  background: #e6f4ea;
+  border-color: #b7dfc2;
+}
+
+.tool-stack-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 8px 0 7px;
+}
+
+.tool-stack-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tool-chip {
+  display: inline-flex;
+  min-height: 26px;
+  padding: 2px 9px 2px 6px;
+  align-items: center;
+  gap: 5px;
+  color: #263244;
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.tool-chip-icon {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  object-fit: contain;
+}
+
+.tool-chip-icon-svg {
+  color: #5b6472;
+}
+
+.tool-chip-monogram {
+  display: inline-grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(140deg, #3370ff 12%, #00b96b 88%);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tool-chip-monogram::before {
+  content: "L";
+}
+
+.education-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.education-school-line,
+.education-tag-line {
+  margin: 0;
+}
+
+.education-school-line {
+  color: #171717;
+  font-weight: 600;
+}
+
+.education-tag {
+  display: inline-flex;
+  min-height: 25px;
+  padding: 3px 10px;
+  align-items: center;
+  color: #174ea6;
+  background: #eef4ff;
+  border: 1px solid #c8d9fb;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.campus-experience-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.campus-ability-badge {
+  position: relative;
+  display: inline-flex;
+  min-height: 25px;
+  padding: 3px 10px 3px 15px;
+  align-items: center;
+  overflow: hidden;
+  color: #344054;
+  background: #f8fafc;
+  border: 1px solid #d8e0ea;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.campus-ability-badge::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(
+    180deg,
+    #4285f4 0 25%,
+    #ea4335 25% 50%,
+    #fbbc04 50% 75%,
+    #34a853 75% 100%
+  );
+  content: "";
+}
+
+.source-punctuation {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .resume-spacer {
   height: 10px;
 }
@@ -112,6 +309,16 @@ select {
 .resume-sheet strong {
   color: #111;
   font-weight: 700;
+}
+
+.resume-sheet .result-highlight {
+  color: #0d1f35;
+  font-weight: 750;
+}
+
+.work-metadata {
+  color: #2f3b4c;
+  font-weight: 650;
 }
 
 .resume-sheet a {
@@ -191,12 +398,42 @@ select {
     font-size: 17px;
   }
 
+  .keyword-line,
+  .tool-stack-line {
+    gap: 6px;
+  }
+
+  .keyword-chip,
+  .tool-chip,
+  .education-tag,
+  .campus-ability-badge {
+    font-size: 12px;
+  }
+
   .resume-list {
     padding-left: 1.3rem;
   }
 
   .resume-list .resume-list {
     padding-left: 1.2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .keyword-line,
+  .tool-stack-line {
+    display: block;
+  }
+
+  .profile-highlight-label {
+    display: block;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .keyword-list,
+  .tool-stack-list {
+    width: 100%;
   }
 }
 
@@ -241,5 +478,12 @@ select {
 
   .resume-sheet a {
     color: inherit;
+  }
+
+  .keyword-chip,
+  .tool-chip,
+  .education-tag,
+  .campus-ability-badge {
+    background: #fff;
   }
 }
