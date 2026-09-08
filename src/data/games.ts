@@ -24,5 +24,11 @@ export const games: ReadonlyArray<readonly [string, string, string, string, stri
     ['rv','RV There Yet?','合作 / 冒险','0–20 h','',3949040],
     ['pico','PICO PARK: Classic Edition','合作 / 解谜','0–20 h','',461040],
     ['rdr','Red Dead Redemption 2','开放世界 / 动作','0–20 h','',1174180],
-    ['spiderman',"Marvel’s Spider-Man 2",'开放世界 / 动作','20–50 h','',2651280]
+    ['spiderman',"Marvel’s Spider-Man 2",'开放世界 / 动作','20–50 h','',2651280],
+    ['love-around','完蛋！我被美女包围了！','互动影游 / 恋爱','','',2322560],
+    ['love-room','完蛋！我被美女包围了！— 房间里的心跳','互动影游 / DLC','','',2670930],
+    ['love-prequel','完蛋！我被美女包围了！前传','互动影游 / 恋爱','','',3099660],
+    ['love-two','完蛋！我被美女包围了！2','互动影游 / 恋爱','','',3282390],
+    ['love-summer','盛夏离与合','互动影游 / 恋爱','','“完蛋”系列篇章',3987560],
+    ['true-love','真恋～寄语枫秋～','视觉小说 / 恋爱','','',495990]
   ];
