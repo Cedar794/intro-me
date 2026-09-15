@@ -1,4 +1,5 @@
 import { games } from '../data/games'
+import { gameCategories } from '../data/gameCategories'
 
 export function GameProfile({ hidden }: { hidden: boolean }) {
   return (
@@ -14,8 +15,20 @@ export function GameProfile({ hidden }: { hidden: boolean }) {
         <div className="game-intro-art"><img src={`${import.meta.env.BASE_URL}assets/games/cyberpunk.jpg`} alt="赛博朋克 2077 官方游戏封面" width="460" height="215" /><div><span>NOW PLAYING</span><strong>赛博朋克 2077</strong><p>50–100 h · 二周目游玩中</p></div></div>
       </header>
       <div className="game-library-heading"><div><p className="game-eyebrow">THE COLLECTION</p><h2>我的游戏足迹</h2></div><span>{games.length} ENTRIES / 按个人游玩记录整理</span></div>
-      <div className="game-library">
-        {games.map(([key, title, genre, time, note, source]) => (
+      <nav className="game-category-nav" aria-label="游戏分类">
+        {gameCategories.map(category => (
+          <a key={category.id} href={`#${category.id}`}>{category.name} <span>{category.games.length}</span></a>
+        ))}
+      </nav>
+      {gameCategories.map((category, index) => (
+        <section key={category.id} id={category.id} className="game-category" aria-labelledby={`${category.id}-title`}>
+          <header className="game-category-heading">
+            <span className="game-category-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+            <h2 id={`${category.id}-title`}>{category.name}</h2>
+            <span className="game-category-count">{category.games.length} 项记录</span>
+          </header>
+          <div className="game-library">
+        {category.games.map(([key, title, genre, time, note, source]) => (
           <a key={key} className="game-card" href={typeof source === 'number' ? `https://store.steampowered.com/app/${source}/` : source} target="_blank" rel="noopener noreferrer">
             <div className="game-cover"><img src={`${import.meta.env.BASE_URL}assets/games/${key}.jpg`} alt={`${title} 官方封面`} width="460" height="215" loading="lazy" /></div>
             <div className="game-card-meta"><span>{genre}</span>{time && <span>{time}</span>}</div>
@@ -23,7 +36,9 @@ export function GameProfile({ hidden }: { hidden: boolean }) {
             {note && <p>{note}</p>}
           </a>
         ))}
-      </div>
+          </div>
+        </section>
+      ))}
       <footer className="game-footer">游玩时长与经历由本人提供。游戏封面版权归各发行商所有；点击卡片可查看官方或 Steam 商店来源。</footer>
     </main>
   )
